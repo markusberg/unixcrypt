@@ -1,0 +1,28 @@
+{
+  "name": "sha512crypt",
+  "version": "1.0.0",
+  "description": "Nodejs implementation of sha512crypt",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markusberg/sha512crypt.git"
+  },
+  "keywords": [
+    "sha512crypt"
+  ],
+  "author": "Markus Berg",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/markusberg/sha512crypt/issues"
+  },
+  "homepage": "https://github.com/markusberg/sha512crypt#readme",
+  "devDependencies": {
+    "typescript": "^2.9.2"
+  }
+}
