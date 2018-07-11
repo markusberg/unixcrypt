@@ -1,7 +1,13 @@
-export function sha512crypt(plaintext: string, salt?: string, rounds?: number) {
+
+function crypt(plaintext: string, salt?: string, rounds?: number) {
   return "apa";
 }
 
-export function verifyPassword(plaintext: string, hash: string): boolean {
+function verifyPassword(plaintext: string, hash: string): boolean {
   return true;
+}
+
+export const sha512crypt = {
+  crypt,
+  verifyPassword,
 }

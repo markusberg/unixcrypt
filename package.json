@@ -5,9 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
+    "build": "npm run clean && tsc",
+    "clean": "rimraf dist",
     "prepublish": "npm run build",
-    "build": "tsc",
     "test": "jest --forceExit --coverage --verbose",
+    "watch": "npm run clean && tsc -w",
     "watch-test": "npm run test -- --watchAll"
   },
   "repository": {

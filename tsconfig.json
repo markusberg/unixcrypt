@@ -12,6 +12,6 @@
     "strict": true
   },
   "exclude": [
-    "tests"
+    "test"
   ]
 }
