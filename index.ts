@@ -1,4 +1,4 @@
-export function sha512crypt(plaintext: string, salt: string, rounds: number) {
+export function sha512crypt(plaintext: string, salt?: string, rounds?: number) {
   return "apa";
 }
 

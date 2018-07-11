@@ -7,7 +7,8 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --forceExit --coverage --verbose",
+    "watch-test": "npm run test -- --watchAll"
   },
   "repository": {
     "type": "git",
@@ -22,7 +23,28 @@
     "url": "https://github.com/markusberg/sha512crypt/issues"
   },
   "homepage": "https://github.com/markusberg/sha512crypt#readme",
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  },
   "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/jest": "^23.1.5",
+    "chai": "^4.1.2",
+    "jest": "^23.4.0",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^23.0.0",
+    "ts-node": "^7.0.0",
     "typescript": "^2.9.2"
   }
 }

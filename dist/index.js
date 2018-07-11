@@ -8,3 +8,4 @@ function verifyPassword(plaintext, hash) {
     return true;
 }
 exports.verifyPassword = verifyPassword;
+//# sourceMappingURL=index.js.map
