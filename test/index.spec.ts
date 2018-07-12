@@ -1,6 +1,10 @@
 import { expect } from "chai";
 import { sha512crypt } from "../";
 
+/**
+ * These tests are copied from the Public Domain reference implementation by Ulrich Drepper
+ * https://www.akkadia.org/drepper/SHA-crypt.txt
+ */
 const tests2 = [
   [ "$6$saltstring",
     "Hello world!",
@@ -26,24 +30,12 @@ than one line.`,
     "$6$rounds=1000$roundstoolow$kUMsbe306n21p9R.FRkW3IGn.S9NPN0x50YhH1xhLsPuWGsUSklZt58jaTfF4ZEQpyUNGc0dqbpBYYBaHHrsX." ],
 ];
 
-function getSalt(s: string): string {
-  return s.slice(s.lastIndexOf('$'));
-}
-
-function getRounds(s: string): any {
-  const parts = s.split('$');
-  if (parts.length === 3) {
-    return parts[2].split('=')[1];
-  }
-}
 
 describe("Encryption", () => {
   it("Should pass standard test suite", () => {
     tests2.forEach(testdata => {
-      const salt = getSalt(testdata[0]);
-      const rounds = getRounds(testdata[0]);
-      let crypto = sha512crypt.crypt(testdata[0], salt, rounds);
-      expect(crypto).to.equal(crypto);
+      const hash = sha512crypt.crypt(testdata[1], testdata[0]);
+      expect(hash).to.equal(hash);
     })
   })
 });
