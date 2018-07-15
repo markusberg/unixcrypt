@@ -5,12 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "npm run clean && tsc",
+    "build": "rimraf dist && tsc",
     "clean": "rimraf dist",
     "prepublish": "npm run build",
-    "test": "jest --forceExit --coverage --verbose",
-    "watch": "npm run clean && tsc -w",
-    "watch-test": "npm run test -- --watchAll"
+    "test": "npm run clean && jest --forceExit --coverage --verbose",
+    "test:live": "npm run test -- --watchAll"
   },
   "repository": {
     "type": "git",
@@ -25,23 +24,10 @@
     "url": "https://github.com/markusberg/sha512crypt/issues"
   },
   "homepage": "https://github.com/markusberg/sha512crypt#readme",
-  "jest": {
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ]
-  },
   "devDependencies": {
     "@types/chai": "^4.1.4",
     "@types/jest": "^23.1.5",
+    "@types/node": "^10.5.2",
     "chai": "^4.1.2",
     "jest": "^23.4.0",
     "rimraf": "^2.6.2",
