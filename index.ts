@@ -60,7 +60,7 @@ const shuffleMap: IShuffleMap = {
 const roundsDefault = 5000;
 
 /**
- * Convenience function for generating a random string
+ * Generate a random string
  * @param length Length of salt
  */
 function getRandomString(length: number): string {
@@ -105,12 +105,19 @@ function parseSalt(salt?: string): IConf {
 
     if (parts.length === 4) {
       const test = parts[2].match(/^rounds=(\d*)$/);
+
+      if (!test) {
+        throw new Error("Invalid salt string");
+      }
+
       conf.rounds = test ? Number(test[1]) : roundsDefault;
       conf.specifyRounds = test !== null;
       conf.saltString = parts[3];
-    } else {
+    } else if (parts.length === 3) {
       conf.rounds = roundsDefault;
       conf.saltString = parts[2];
+    } else {
+      throw new Error("Invalid salt string");
     }
   }
 
@@ -124,6 +131,10 @@ function parseSalt(salt?: string): IConf {
 
   // sanity-check saltString
   conf.saltString = conf.saltString.substr(0, 16);
+
+  if (conf.saltString.match('[^./0-9A-Za-z]')) {
+    throw new Error("Salt contains invalid characters")
+  }
 
   return conf;
 }
@@ -161,9 +172,7 @@ function generateDigestA(plaintext: string, conf: IConf): Buffer {
     return hashA.digest();
 }
 
-function encrypt(plaintext: string, salt?: string) {
-  const conf = parseSalt(salt);
-
+function generateHash(plaintext: string, conf: IConf) {
   if (conf.id !== HashType.sha256 && conf.id !== HashType.sha512) {
     throw new Error("Only sha256 and sha512 is supported by this library");
   }
@@ -247,10 +256,7 @@ function encrypt(plaintext: string, salt?: string) {
   }, digestA);
 
   // step 22
-  const hash = base64Encode(digestC, (<any>shuffleMap)[hashType]);
-
-  // adjust hash length by stripping trailing zeroes induced by base64-encoding
-  return normalizeSalt(conf) + "$" + hash;
+  return base64Encode(digestC, (<any>shuffleMap)[hashType]);
 }
 
 function base64Encode(digest: Buffer, shuffleMap: number[]): string {
@@ -280,8 +286,26 @@ function bufferToBase64(buf: Buffer): string {
   return dictionary.charAt(first) + dictionary.charAt(second) + dictionary.charAt(third) + dictionary.charAt(fourth);
 }
 
+/**
+ * Create sha256 or sha512 crypt of plaintext password
+ * @param plaintext The plaintext password
+ * @param salt optional salt, for example "$6$salt" or "$6$rounds=10000$salt"
+ */
+function encrypt(plaintext: string, salt?: string) {
+  const conf = parseSalt(salt);
+  const hash = generateHash(plaintext, conf);
+  return normalizeSalt(conf) + "$" + hash;
+}
+
+/**
+ * Verify plaintext password against expected hash
+ * @param plaintext The plaintext password
+ * @param hash The expected hash
+ */
 function verify(plaintext: string, hash: string): boolean {
-  return true;
+  const salt = hash.slice(0, hash.lastIndexOf('$'));
+  const computedHash = encrypt(plaintext, salt);
+  return computedHash === hash;
 }
 
 export const shacrypt = {
