@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

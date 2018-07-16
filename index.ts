@@ -317,7 +317,7 @@ function verify(plaintext: string, hash: string): boolean {
   return computedHash === hash;
 }
 
-export const unixcrypt = {
+export {
   encrypt,
   verify,
 }
