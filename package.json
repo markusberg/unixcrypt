@@ -1,7 +1,7 @@
 {
-  "name": "sha512crypt",
-  "version": "1.0.0",
-  "description": "Nodejs implementation of sha512crypt",
+  "name": "unixcrypt",
+  "version": "0.1.0",
+  "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -9,25 +9,27 @@
     "clean": "rimraf dist",
     "prepublish": "npm run build",
     "test": "npm run clean && jest --forceExit --coverage --verbose",
-    "test:live": "npm run test -- --watchAll"
+    "test:watch": "npm run test -- --watchAll"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/markusberg/sha512crypt.git"
+    "url": "git+https://github.com/markusberg/unixcrypt.git"
   },
   "keywords": [
-    "sha512crypt"
+    "sha256crypt",
+    "sha512crypt",
+    "unixcrypt"
   ],
   "author": "Markus Berg",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/markusberg/sha512crypt/issues"
+    "url": "https://github.com/markusberg/unixcrypt/issues"
   },
-  "homepage": "https://github.com/markusberg/sha512crypt#readme",
+  "homepage": "https://github.com/markusberg/unixcrypt#readme",
   "devDependencies": {
     "@types/chai": "^4.1.4",
     "@types/jest": "^23.1.5",
-    "@types/node": "^10.5.2",
+    "@types/node": "^8.10.21",
     "chai": "^4.1.2",
     "jest": "^23.4.0",
     "rimraf": "^2.6.2",

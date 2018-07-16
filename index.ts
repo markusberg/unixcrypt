@@ -86,7 +86,7 @@ function normalizeSalt(conf: IConf): string {
 
 /**
  * Parse salt into pieces, performs sanity checks, and returns proper defaults for missing values
- * @param salt Standard salt, "$6$rounds=1234&saltsalt" or "$6$saltsalt"
+ * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234"
  */
 function parseSalt(salt?: string): IConf {
   const roundsMin = 1000;
@@ -103,21 +103,27 @@ function parseSalt(salt?: string): IConf {
     const parts = salt.split('$');
     conf.id = Number(parts[1]);
 
-    if (parts.length === 4) {
-      const test = parts[2].match(/^rounds=(\d*)$/);
+    if (conf.id !== HashType.sha256 && conf.id !== HashType.sha512) {
+      throw new Error("Only sha256 and sha512 is supported by this library");
+    }
 
-      if (!test) {
-        throw new Error("Invalid salt string");
-      }
-
-      conf.rounds = test ? Number(test[1]) : roundsDefault;
-      conf.specifyRounds = test !== null;
-      conf.saltString = parts[3];
-    } else if (parts.length === 3) {
-      conf.rounds = roundsDefault;
-      conf.saltString = parts[2];
-    } else {
+    if (parts.length < 2 || parts.length > 4) {
       throw new Error("Invalid salt string");
+    } else if (parts.length > 2) {
+      const rounds = parts[2].match(/^rounds=(\d*)$/);
+
+      if (rounds) {
+        // number of rounds has been specified
+        conf.rounds = Number(rounds[1]);
+        conf.specifyRounds = true;
+
+        if (parts[3]) {
+          conf.saltString = parts[3];
+        }
+      } else {
+        // default number of rounds has already been set
+        conf.saltString = parts[2];
+      }
     }
   }
 
@@ -126,6 +132,7 @@ function parseSalt(salt?: string): IConf {
     conf.rounds < roundsMin
       ? roundsMin
       : conf.rounds > roundsMax
+        /* istanbul ignore next */
         ? conf.rounds = roundsMax
         : conf.rounds;
 
@@ -133,12 +140,17 @@ function parseSalt(salt?: string): IConf {
   conf.saltString = conf.saltString.substr(0, 16);
 
   if (conf.saltString.match('[^./0-9A-Za-z]')) {
-    throw new Error("Salt contains invalid characters")
+    throw new Error("Invalid salt string");
   }
 
   return conf;
 }
 
+/**
+ * Steps 1-12 in the spec
+ * @param plaintext
+ * @param conf
+ */
 function generateDigestA(plaintext: string, conf: IConf): Buffer {
     const digestSize = conf.id === HashType.sha256 ? 32 : 64;
 
@@ -155,7 +167,7 @@ function generateDigestA(plaintext: string, conf: IConf): Buffer {
 
     // step 9
     const plaintextByteLength = Buffer.byteLength(plaintext);
-    for (let offset = 0; (offset * digestSize + digestSize) < plaintextByteLength; offset++) {
+    for (let offset = 0; (offset + digestSize) < plaintextByteLength; offset += digestSize) {
       hashA.update(digestB);
     }
 
@@ -173,10 +185,6 @@ function generateDigestA(plaintext: string, conf: IConf): Buffer {
 }
 
 function generateHash(plaintext: string, conf: IConf) {
-  if (conf.id !== HashType.sha256 && conf.id !== HashType.sha512) {
-    throw new Error("Only sha256 and sha512 is supported by this library");
-  }
-
   const digestSize = conf.id === HashType.sha256 ? 32 : 64;
   const hashType = HashType[conf.id];
 
@@ -193,7 +201,7 @@ function generateHash(plaintext: string, conf: IConf) {
 
   // step 16a
   const p = Buffer.alloc(plaintextByteLength);
-  for (let offset = 0; (offset * digestSize + digestSize) < plaintextByteLength; offset++) {
+  for (let offset = 0; (offset + digestSize) < plaintextByteLength; offset += digestSize) {
     p.set(digestDP, offset);
   }
 
@@ -215,7 +223,8 @@ function generateHash(plaintext: string, conf: IConf) {
   // step 20a
   // Isn't this step redundant? The salt string doesn't have 32 or 64 bytes. It's truncated to 16 characters
   const saltByteLength = Buffer.byteLength(conf.saltString);
-  for (let offset = 0; (offset * digestSize + digestSize) < saltByteLength; offset++) {
+  for (let offset = 0; (offset + digestSize) < saltByteLength; offset += digestSize) {
+    /* istanbul ignore next */
     s.set(digestDS, offset);
   }
 
@@ -308,7 +317,7 @@ function verify(plaintext: string, hash: string): boolean {
   return computedHash === hash;
 }
 
-export const shacrypt = {
+export const unixcrypt = {
   encrypt,
   verify,
 }
