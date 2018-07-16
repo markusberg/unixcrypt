@@ -19,8 +19,20 @@ $ npm install unixcrypt
 ```
 
 ## Usage
+### JavaScript
+The JavaScript usage is similar to the TypeScript below, but you'll watn to use the `require("unixcrypt")` construct instead of `import ...`
+```javascript
+var unixcrypt = require("unixcrypt")
+
+const plaintextPassword = "password";
+const pwhash = unixcrypt.encrypt(plaintextPassword);
+
+// verify password with generated hash
+console.log(unixcrypt.verify(plaintextPassword, pwHash));
+// true
+```
+
 ### TypeScript
-This is TypeScript, but it should work the same in modern JavaScript.
 ```typescript
 import { encrypt, verify } from "unixcrypt";
 
