@@ -20,7 +20,7 @@ $ npm install unixcrypt
 
 ## Usage
 ### JavaScript
-The JavaScript usage is similar to the TypeScript below, but you'll watn to use the `require("unixcrypt")` construct instead of `import ...`
+The JavaScript usage is similar to the TypeScript below, but you'll want to use the `require("unixcrypt")` construct instead of `import ...`
 ```javascript
 var unixcrypt = require("unixcrypt")
 
