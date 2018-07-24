@@ -39,13 +39,13 @@ import { encrypt, verify } from "unixcrypt";
 const plaintextPassword = "password";
 
 // without providing salt, random salt is used, and default number of rounds
-const pwhash = encrypt(plaintextPassword);
+const pwHash = encrypt(plaintextPassword);
 
 // verify password with generated hash
 console.log(verify(plaintextPassword, pwHash));
 // true
 
-// provide number of rounds
+// specify number of rounds
 const moreRounds = encrypt(plaintextPassword, "$6$rounds=10000");
 console.log(verify(plaintextPassword, moreRounds));
 // true
