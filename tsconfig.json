@@ -3,15 +3,12 @@
     "module": "commonjs",
     "esModuleInterop": true,
     "target": "es2017",
-    "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./src",
     "declaration": true,
+    "declarationMap": true,
     "strict": true
   },
-  "exclude": [
-    "test"
-  ]
+  "exclude": ["test"]
 }
