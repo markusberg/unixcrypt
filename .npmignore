@@ -1,5 +1,6 @@
 coverage/
 test/
 .prettierrc
+.travis.yml
 jest.config.js
 tsconfig.json
