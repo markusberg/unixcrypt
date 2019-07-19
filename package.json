@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/chai": "^4.1.7",
     "@types/jest": "^24.0.15",
-    "@types/node": "^8.10.51",
+    "@types/node": "^10.14.13",
     "chai": "^4.2.0",
     "husky": "^3.0.0",
     "jest": "^24.8.0",
