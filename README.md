@@ -1,5 +1,10 @@
 # Unixcrypt for Node.js
 
+[![travis build](https://img.shields.io/travis/markusberg/unixcrypt.svg)](https://travis-ci.org/markusberg/unixcrypt)
+[![codecov coverage](https://img.shields.io/codecov/c/github/markusberg/unixcrypt/master.svg)](https://codecov.io/github/markusberg/unixcrypt)
+[![version](https://img.shields.io/npm/v/unixcrypt.svg)](https://codecov.io/github/markusberg/unixcrypt)
+[![license](https://img.shields.io/github/license/markusberg/unixcrypt.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+
 A Node.js module for encrypting and verifying passwords according to the SHA-256 and SHA-512 Crypt standard:
 https://www.akkadia.org/drepper/SHA-crypt.txt
 
