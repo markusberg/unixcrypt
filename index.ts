@@ -1,10 +1,10 @@
-import { createHash } from "crypto";
+import { createHash } from "crypto"
 
-interface IConf {
-  id: HashType;
-  saltString: string;
-  rounds: number;
-  specifyRounds: boolean;
+interface Conf {
+  id: HashType
+  saltString: string
+  rounds: number
+  specifyRounds: boolean
 }
 
 enum HashType {
@@ -12,13 +12,16 @@ enum HashType {
   "sha512" = 6,
 }
 
-interface IShuffleMap {
-  sha256: number[];
-  sha512: number[];
+interface ShuffleMap {
+  sha256: number[]
+  sha512: number[]
 }
 
-const dictionary = "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const shuffleMap: IShuffleMap = {
+const dictionary =
+  "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+
+// prettier-ignore
+const shuffleMap: ShuffleMap = {
   sha256: [
     20, 10,  0,
     11,  1, 21,
@@ -57,42 +60,42 @@ const shuffleMap: IShuffleMap = {
     63,
   ]
 };
-const roundsDefault = 5000;
+const roundsDefault = 5000
 
 /**
  * Generate a random string
  * @param length Length of salt
  */
 function getRandomString(length: number): string {
-  var result = "";
+  var result = ""
   for (let i = 0; i < length; i++) {
-    result += dictionary[Math.floor(Math.random() * dictionary.length)];
+    result += dictionary[Math.floor(Math.random() * dictionary.length)]
   }
-  return result;
+  return result
 }
 
 /**
  * Normalize salt for use with hash, for example: "$6$rounds=1234&saltsalt" or "$6$saltsalt"
  * @param conf The separate parts of id, rounds, specifyRounds, and saltString
  */
-function normalizeSalt(conf: IConf): string {
-  const parts = ["", conf.id];
+function normalizeSalt(conf: Conf): string {
+  const parts = ["", conf.id]
   if (conf.specifyRounds || conf.rounds !== roundsDefault) {
-    parts.push(`rounds=${conf.rounds}`);
+    parts.push(`rounds=${conf.rounds}`)
   }
-  parts.push(conf.saltString);
-  return parts.join("$");
+  parts.push(conf.saltString)
+  return parts.join("$")
 }
 
 /**
  * Parse salt into pieces, performs sanity checks, and returns proper defaults for missing values
  * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234"
  */
-function parseSalt(salt?: string): IConf {
-  const roundsMin = 1000;
-  const roundsMax = 999999999;
+function parseSalt(salt?: string): Conf {
+  const roundsMin = 1000
+  const roundsMax = 999999999
 
-  const conf: IConf = {
+  const conf: Conf = {
     id: HashType.sha512,
     saltString: getRandomString(16),
     rounds: roundsDefault,
@@ -100,29 +103,29 @@ function parseSalt(salt?: string): IConf {
   }
 
   if (salt) {
-    const parts = salt.split('$');
-    conf.id = Number(parts[1]);
+    const parts = salt.split("$")
+    conf.id = Number(parts[1])
 
     if (conf.id !== HashType.sha256 && conf.id !== HashType.sha512) {
-      throw new Error("Only sha256 and sha512 is supported by this library");
+      throw new Error("Only sha256 and sha512 is supported by this library")
     }
 
     if (parts.length < 2 || parts.length > 4) {
-      throw new Error("Invalid salt string");
+      throw new Error("Invalid salt string")
     } else if (parts.length > 2) {
-      const rounds = parts[2].match(/^rounds=(\d*)$/);
+      const rounds = parts[2].match(/^rounds=(\d*)$/)
 
       if (rounds) {
         // number of rounds has been specified
-        conf.rounds = Number(rounds[1]);
-        conf.specifyRounds = true;
+        conf.rounds = Number(rounds[1])
+        conf.specifyRounds = true
 
         if (parts[3]) {
-          conf.saltString = parts[3];
+          conf.saltString = parts[3]
         }
       } else {
         // default number of rounds has already been set
-        conf.saltString = parts[2];
+        conf.saltString = parts[2]
       }
     }
   }
@@ -132,18 +135,18 @@ function parseSalt(salt?: string): IConf {
     conf.rounds < roundsMin
       ? roundsMin
       : conf.rounds > roundsMax
-        /* istanbul ignore next */
-        ? conf.rounds = roundsMax
-        : conf.rounds;
+      ? /* istanbul ignore next */
+        (conf.rounds = roundsMax)
+      : conf.rounds
 
   // sanity-check saltString
-  conf.saltString = conf.saltString.substr(0, 16);
+  conf.saltString = conf.saltString.substr(0, 16)
 
-  if (conf.saltString.match('[^./0-9A-Za-z]')) {
-    throw new Error("Invalid salt string");
+  if (conf.saltString.match("[^./0-9A-Za-z]")) {
+    throw new Error("Invalid salt string")
   }
 
-  return conf;
+  return conf
 }
 
 /**
@@ -151,136 +154,152 @@ function parseSalt(salt?: string): IConf {
  * @param plaintext
  * @param conf
  */
-function generateDigestA(plaintext: string, conf: IConf): Buffer {
-    const digestSize = conf.id === HashType.sha256 ? 32 : 64;
+function generateDigestA(plaintext: string, conf: Conf): Buffer {
+  const digestSize = conf.id === HashType.sha256 ? 32 : 64
 
-    // steps 1-8
-    const hashA = createHash(HashType[conf.id]);
-    hashA.update(plaintext);
-    hashA.update(conf.saltString);
+  // steps 1-8
+  const hashA = createHash(HashType[conf.id])
+  hashA.update(plaintext)
+  hashA.update(conf.saltString)
 
-    const hashB = createHash(HashType[conf.id]);
-    hashB.update(plaintext);
-    hashB.update(conf.saltString);
-    hashB.update(plaintext);
-    const digestB = hashB.digest();
+  const hashB = createHash(HashType[conf.id])
+  hashB.update(plaintext)
+  hashB.update(conf.saltString)
+  hashB.update(plaintext)
+  const digestB = hashB.digest()
 
-    // step 9
-    const plaintextByteLength = Buffer.byteLength(plaintext);
-    for (let offset = 0; (offset + digestSize) < plaintextByteLength; offset += digestSize) {
-      hashA.update(digestB);
-    }
+  // step 9
+  const plaintextByteLength = Buffer.byteLength(plaintext)
+  for (
+    let offset = 0;
+    offset + digestSize < plaintextByteLength;
+    offset += digestSize
+  ) {
+    hashA.update(digestB)
+  }
 
-    // step 10
-    const remainder = plaintextByteLength % digestSize;
-    hashA.update(digestB.slice(0, remainder));
+  // step 10
+  const remainder = plaintextByteLength % digestSize
+  hashA.update(digestB.slice(0, remainder))
 
-    // step 11
-    plaintextByteLength.toString(2).split("").reverse().forEach(num => {
-      hashA.update(num === "0" ? plaintext : digestB);
-    });
+  // step 11
+  plaintextByteLength
+    .toString(2)
+    .split("")
+    .reverse()
+    .forEach(num => {
+      hashA.update(num === "0" ? plaintext : digestB)
+    })
 
-    // step 12
-    return hashA.digest();
+  // step 12
+  return hashA.digest()
 }
 
-function generateHash(plaintext: string, conf: IConf) {
-  const digestSize = conf.id === HashType.sha256 ? 32 : 64;
-  const hashType = HashType[conf.id];
+function generateHash(plaintext: string, conf: Conf) {
+  const digestSize = conf.id === HashType.sha256 ? 32 : 64
+  const hashType = HashType[conf.id]
 
   // steps 1-12
-  const digestA = generateDigestA(plaintext, conf);
+  const digestA = generateDigestA(plaintext, conf)
 
   // steps 13-15
-  const plaintextByteLength = Buffer.byteLength(plaintext);
-  const hashDP = createHash(hashType);
+  const plaintextByteLength = Buffer.byteLength(plaintext)
+  const hashDP = createHash(hashType)
   for (let i = 0; i < plaintextByteLength; i++) {
-    hashDP.update(plaintext);
+    hashDP.update(plaintext)
   }
-  const digestDP = hashDP.digest();
+  const digestDP = hashDP.digest()
 
   // step 16a
-  const p = Buffer.alloc(plaintextByteLength);
-  for (let offset = 0; (offset + digestSize) < plaintextByteLength; offset += digestSize) {
-    p.set(digestDP, offset);
+  const p = Buffer.alloc(plaintextByteLength)
+  for (
+    let offset = 0;
+    offset + digestSize < plaintextByteLength;
+    offset += digestSize
+  ) {
+    p.set(digestDP, offset)
   }
 
   // step 16b
-  const remainder = plaintextByteLength%digestSize;
-  p.set(digestDP.slice(0, remainder), plaintextByteLength - remainder);
+  const remainder = plaintextByteLength % digestSize
+  p.set(digestDP.slice(0, remainder), plaintextByteLength - remainder)
 
   // step 17-19
-  const hashDS = createHash(hashType);
-  const step18 = 16 + digestA[0];
+  const hashDS = createHash(hashType)
+  const step18 = 16 + digestA[0]
   for (let i = 0; i < step18; i++) {
-    hashDS.update(conf.saltString);
+    hashDS.update(conf.saltString)
   }
-  const digestDS = hashDS.digest();
+  const digestDS = hashDS.digest()
 
   // step 20
-  const s = Buffer.alloc(conf.saltString.length);
+  const s = Buffer.alloc(conf.saltString.length)
 
   // step 20a
   // Isn't this step redundant? The salt string doesn't have 32 or 64 bytes. It's truncated to 16 characters
-  const saltByteLength = Buffer.byteLength(conf.saltString);
-  for (let offset = 0; (offset + digestSize) < saltByteLength; offset += digestSize) {
+  const saltByteLength = Buffer.byteLength(conf.saltString)
+  for (
+    let offset = 0;
+    offset + digestSize < saltByteLength;
+    offset += digestSize
+  ) {
     /* istanbul ignore next */
-    s.set(digestDS, offset);
+    s.set(digestDS, offset)
   }
 
   // step 20b
-  const saltRemainder = saltByteLength % digestSize;
-  s.set(digestDS.slice(0, saltRemainder), saltByteLength - saltRemainder);
+  const saltRemainder = saltByteLength % digestSize
+  s.set(digestDS.slice(0, saltRemainder), saltByteLength - saltRemainder)
 
   // step 21
-  const rounds = Array(conf.rounds).fill(0);
+  const rounds = Array(conf.rounds).fill(0)
   const digestC: Buffer = rounds.reduce((acc, curr, idx) => {
-    const hashC = createHash(hashType);
+    const hashC = createHash(hashType)
 
     // steps b-c
     if (idx % 2 === 0) {
-      hashC.update(acc);
+      hashC.update(acc)
     } else {
-      hashC.update(p);
+      hashC.update(p)
     }
 
     // step d
     if (idx % 3 !== 0) {
-      hashC.update(s);
+      hashC.update(s)
     }
 
     // step e
     if (idx % 7 !== 0) {
-      hashC.update(p);
+      hashC.update(p)
     }
 
     // steps f-g
     if (idx % 2 !== 0) {
-      hashC.update(acc);
+      hashC.update(acc)
     } else {
-      hashC.update(p);
+      hashC.update(p)
     }
 
-    return hashC.digest();
-  }, digestA);
+    return hashC.digest()
+  }, digestA)
 
   // step 22
-  return base64Encode(digestC, (<any>shuffleMap)[hashType]);
+  return base64Encode(digestC, (<any>shuffleMap)[hashType])
 }
 
 function base64Encode(digest: Buffer, shuffleMap: number[]): string {
-  let hash = "";
-  for (let idx = 0; idx < digest.length; idx+=3) {
-    const buf = Buffer.alloc(3);
-    buf[0] = digest[shuffleMap[idx]];
-    buf[1] = digest[shuffleMap[idx + 1]];
-    buf[2] = digest[shuffleMap[idx + 2]];
+  let hash = ""
+  for (let idx = 0; idx < digest.length; idx += 3) {
+    const buf = Buffer.alloc(3)
+    buf[0] = digest[shuffleMap[idx]]
+    buf[1] = digest[shuffleMap[idx + 1]]
+    buf[2] = digest[shuffleMap[idx + 2]]
 
-    hash += bufferToBase64(buf);
+    hash += bufferToBase64(buf)
   }
 
   // adjust hash length by stripping trailing zeroes induced by base64-encoding
-  return hash.slice(0, digest.length === 32 ? -1 : -2);
+  return hash.slice(0, digest.length === 32 ? -1 : -2)
 }
 
 /**
@@ -288,11 +307,20 @@ function base64Encode(digest: Buffer, shuffleMap: number[]): string {
  * @param buf Buffer of bytes to be encoded
  */
 function bufferToBase64(buf: Buffer): string {
-  const first = buf[0] & parseInt("00111111", 2);
-  const second = ((buf[0] & parseInt("11000000", 2)) >>> 6) | ((buf[1] & parseInt("00001111", 2)) << 2);
-  const third = ((buf[1] & parseInt("11110000", 2)) >>> 4) | ((buf[2] & parseInt("00000011", 2)) << 4);
-  const fourth = (buf[2] & parseInt("11111100", 2)) >>> 2;
-  return dictionary.charAt(first) + dictionary.charAt(second) + dictionary.charAt(third) + dictionary.charAt(fourth);
+  const first = buf[0] & parseInt("00111111", 2)
+  const second =
+    ((buf[0] & parseInt("11000000", 2)) >>> 6) |
+    ((buf[1] & parseInt("00001111", 2)) << 2)
+  const third =
+    ((buf[1] & parseInt("11110000", 2)) >>> 4) |
+    ((buf[2] & parseInt("00000011", 2)) << 4)
+  const fourth = (buf[2] & parseInt("11111100", 2)) >>> 2
+  return (
+    dictionary.charAt(first) +
+    dictionary.charAt(second) +
+    dictionary.charAt(third) +
+    dictionary.charAt(fourth)
+  )
 }
 
 /**
@@ -301,9 +329,9 @@ function bufferToBase64(buf: Buffer): string {
  * @param salt optional salt, for example "$6$salt" or "$6$rounds=10000$salt"
  */
 function encrypt(plaintext: string, salt?: string) {
-  const conf = parseSalt(salt);
-  const hash = generateHash(plaintext, conf);
-  return normalizeSalt(conf) + "$" + hash;
+  const conf = parseSalt(salt)
+  const hash = generateHash(plaintext, conf)
+  return normalizeSalt(conf) + "$" + hash
 }
 
 /**
@@ -312,12 +340,9 @@ function encrypt(plaintext: string, salt?: string) {
  * @param hash The expected hash
  */
 function verify(plaintext: string, hash: string): boolean {
-  const salt = hash.slice(0, hash.lastIndexOf('$'));
-  const computedHash = encrypt(plaintext, salt);
-  return computedHash === hash;
+  const salt = hash.slice(0, hash.lastIndexOf("$"))
+  const computedHash = encrypt(plaintext, salt)
+  return computedHash === hash
 }
 
-export {
-  encrypt,
-  verify,
-}
+export { encrypt, verify }
