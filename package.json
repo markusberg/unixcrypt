@@ -8,7 +8,7 @@
     "build": "rimraf dist && tsc",
     "clean": "rimraf dist",
     "prepublishOnly": "npm run build",
-    "test": "npm run clean && jest --forceExit --coverage --verbose",
+    "test": "npm run clean && jest --coverage --verbose",
     "test:watch": "npm run test -- --watchAll"
   },
   "repository": {
