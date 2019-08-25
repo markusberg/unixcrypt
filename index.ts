@@ -1,4 +1,5 @@
-import { createHash } from "crypto"
+import { createHash, timingSafeEqual } from "crypto"
+import { Buffer } from "buffer"
 
 interface Conf {
   id: HashType
@@ -342,7 +343,11 @@ function encrypt(plaintext: string, salt?: string) {
 function verify(plaintext: string, hash: string): boolean {
   const salt = hash.slice(0, hash.lastIndexOf("$"))
   const computedHash = encrypt(plaintext, salt)
-  return computedHash === hash
+  
+  return timingSafeEqual(
+    Buffer.from(computedHash, 'utf8'),
+    Buffer.from(hash, 'utf8')
+  )
 }
 
 export { encrypt, verify }
