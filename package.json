@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,17 +28,17 @@
   },
   "homepage": "https://github.com/markusberg/unixcrypt#readme",
   "devDependencies": {
-    "@types/chai": "^4.2.0",
-    "@types/jest": "^24.0.18",
+    "@types/chai": "^4.2.7",
+    "@types/jest": "^24.0.25",
     "@types/node": "^10.14.13",
     "chai": "^4.2.0",
-    "codecov": "^3.5.0",
-    "husky": "^3.0.4",
+    "codecov": "^3.6.1",
+    "husky": "^3.1.0",
     "jest": "^24.9.0",
-    "prettier": "^1.18.2",
-    "pretty-quick": "^1.11.1",
+    "prettier": "^1.19.1",
+    "pretty-quick": "^2.0.1",
     "rimraf": "^3.0.0",
-    "ts-jest": "^24.0.2",
+    "ts-jest": "^24.2.0",
     "typescript": "^3.5.3"
   },
   "husky": {
