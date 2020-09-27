@@ -71,7 +71,7 @@ console.log(verify(plaintextPassword, customSalt))
 
 // or provide both rounds and salt
 const customRoundsAndSalt = encrypt(plaintextPassword, "$6$rounds=10000$salt")
-console.log(verify(plaintextPassword, moreRounds))
+console.log(verify(plaintextPassword, customRoundsAndSalt))
 // true
 
 // you can also use SHA-256
@@ -91,7 +91,7 @@ $ npm test
 or
 
 ```sh
-$ npm test:watch
+$ npm run test:watch
 ```
 
 to get automatic re-tests when files are changed.
