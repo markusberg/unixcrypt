@@ -38,7 +38,7 @@ The JavaScript usage is similar to the TypeScript below, but you'll want to use 
 var unixcrypt = require("unixcrypt")
 
 const plaintextPassword = "password"
-const pwash = unixcrypt.encrypt(plaintextPassword)
+const pwHash = unixcrypt.encrypt(plaintextPassword)
 
 // verify password with generated hash
 console.log(unixcrypt.verify(plaintextPassword, pwHash))
