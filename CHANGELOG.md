@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2022-03-22
+
+- Upgrade most dependencies
+- Minimum required version of Node.js is now 12.19.0
+
 ## [1.0.3] - 2019-07-19
 
 ### Added
@@ -15,5 +20,4 @@ All notable changes to this project will be documented in this file.
 
 ### Removed
 
-- Leading "I" on interfaces (that's a C#-ism)
 - Devdependency on ts-node

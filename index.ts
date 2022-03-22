@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from "crypto"
 import { Buffer } from "buffer"
 
-interface Conf {
+interface IConf {
   id: HashType
   saltString: string
   rounds: number
@@ -13,7 +13,7 @@ enum HashType {
   "sha512" = 6,
 }
 
-interface ShuffleMap {
+interface IShuffleMap {
   sha256: number[]
   sha512: number[]
 }
@@ -22,7 +22,7 @@ const dictionary =
   "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 // prettier-ignore
-const shuffleMap: ShuffleMap = {
+const shuffleMap: IShuffleMap = {
   sha256: [
     20, 10,  0,
     11,  1, 21,
@@ -79,7 +79,7 @@ function getRandomString(length: number): string {
  * Normalize salt for use with hash, for example: "$6$rounds=1234&saltsalt" or "$6$saltsalt"
  * @param conf The separate parts of id, rounds, specifyRounds, and saltString
  */
-function normalizeSalt(conf: Conf): string {
+function normalizeSalt(conf: IConf): string {
   const parts = ["", conf.id]
   if (conf.specifyRounds || conf.rounds !== roundsDefault) {
     parts.push(`rounds=${conf.rounds}`)
@@ -92,11 +92,11 @@ function normalizeSalt(conf: Conf): string {
  * Parse salt into pieces, performs sanity checks, and returns proper defaults for missing values
  * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234"
  */
-function parseSalt(salt?: string): Conf {
+function parseSalt(salt?: string): IConf {
   const roundsMin = 1000
   const roundsMax = 999999999
 
-  const conf: Conf = {
+  const conf: IConf = {
     id: HashType.sha512,
     saltString: getRandomString(16),
     rounds: roundsDefault,
@@ -155,7 +155,7 @@ function parseSalt(salt?: string): Conf {
  * @param plaintext
  * @param conf
  */
-function generateDigestA(plaintext: string, conf: Conf): Buffer {
+function generateDigestA(plaintext: string, conf: IConf): Buffer {
   const digestSize = conf.id === HashType.sha256 ? 32 : 64
 
   // steps 1-8
@@ -188,7 +188,7 @@ function generateDigestA(plaintext: string, conf: Conf): Buffer {
     .toString(2)
     .split("")
     .reverse()
-    .forEach(num => {
+    .forEach((num) => {
       hashA.update(num === "0" ? plaintext : digestB)
     })
 
@@ -196,7 +196,7 @@ function generateDigestA(plaintext: string, conf: Conf): Buffer {
   return hashA.digest()
 }
 
-function generateHash(plaintext: string, conf: Conf) {
+function generateHash(plaintext: string, conf: IConf): string {
   const digestSize = conf.id === HashType.sha256 ? 32 : 64
   const hashType = HashType[conf.id]
 
@@ -329,7 +329,7 @@ function bufferToBase64(buf: Buffer): string {
  * @param plaintext The plaintext password
  * @param salt optional salt, for example "$6$salt" or "$6$rounds=10000$salt"
  */
-function encrypt(plaintext: string, salt?: string) {
+function encrypt(plaintext: string, salt?: string): string {
   const conf = parseSalt(salt)
   const hash = generateHash(plaintext, conf)
   return normalizeSalt(conf) + "$" + hash
