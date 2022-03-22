@@ -1,4 +1,4 @@
-import { createHash, timingSafeEqual } from "crypto"
+import { createHash, timingSafeEqual, randomInt } from "crypto"
 import { Buffer } from "buffer"
 
 interface IConf {
@@ -70,7 +70,7 @@ const roundsDefault = 5000
 function getRandomString(length: number): string {
   var result = ""
   for (let i = 0; i < length; i++) {
-    result += dictionary[Math.floor(Math.random() * dictionary.length)]
+    result += dictionary[randomInt(0, dictionary.length - 1)]
   }
   return result
 }
