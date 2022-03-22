@@ -30,7 +30,7 @@
   "devDependencies": {
     "@types/chai": "^4.2.15",
     "@types/jest": "^26.0.22",
-    "@types/node": "^10.17.35",
+    "@types/node": "^12.19.0",
     "chai": "^4.3.4",
     "codecov": "^3.8.1",
     "husky": "^6.0.0",
