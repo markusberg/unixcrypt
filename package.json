@@ -11,8 +11,10 @@
     "prep:husky": "husky install && chmod ug+x .husky/*",
     "prepublishOnly": "npm run build",
     "test": "npm run clean && jest --coverage --verbose",
-    "test:watch": "npm run test -- --watchAll",
-    "report-coverage": "cat .coverage/lcov.info | codecov"
+    "test:watch": "npm run test -- --watchAll"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   },
   "repository": {
     "type": "git",

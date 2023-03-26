@@ -15,5 +15,6 @@ module.exports = {
   ],
   "modulePathIgnorePatterns": [
     "<rootDir>/dist"
-  ]
+  ],
+  "coverageReporters": ['json-summary', 'text']
 };
