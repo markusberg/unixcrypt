@@ -1,7 +1,7 @@
 # Unixcrypt for Node.js
 
-[![travis build](https://img.shields.io/travis/markusberg/unixcrypt.svg)](https://travis-ci.org/markusberg/unixcrypt)
-[![codecov coverage](https://img.shields.io/codecov/c/github/markusberg/unixcrypt/master.svg)](https://codecov.io/github/markusberg/unixcrypt)
+[![node.js build](https://github.com/markusberg/unixcrypt/actions/workflows/master.yaml/badge.svg)](https://github.com/markusberg/unixcrypt/actions/workflows/master.yaml)
+[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage.svg)](https://github.com/markusberg/unixcrypt/actions)
 [![version](https://img.shields.io/npm/v/unixcrypt.svg)](https://codecov.io/github/markusberg/unixcrypt)
 [![license](https://img.shields.io/github/license/markusberg/unixcrypt.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
