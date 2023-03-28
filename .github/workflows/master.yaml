@@ -3,8 +3,6 @@ name: Node.js 14.x, 16.x, 18.x build
 on:
   push:
     branches: [master]
-  pull_request:
-    branches: [master]
 
 jobs:
   build:
