@@ -89,8 +89,9 @@ function normalizeSalt(conf: IConf): string {
 }
 
 /**
- * Parse salt into pieces, performs sanity checks, and returns proper defaults for missing values
- * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234"
+ * Parse salt into pieces, performs sanity checks, and returns proper
+ * defaults for missing values
+ * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234", "$6$"
  */
 function parseSalt(salt?: string): IConf {
   const roundsMin = 1000
@@ -113,7 +114,9 @@ function parseSalt(salt?: string): IConf {
 
     if (parts.length < 2 || parts.length > 4) {
       throw new Error("Invalid salt string")
-    } else if (parts.length > 2) {
+    }
+
+    if (parts.length > 2) {
       const rounds = parts[2].match(/^rounds=(\d*)$/)
 
       if (rounds) {
@@ -121,7 +124,7 @@ function parseSalt(salt?: string): IConf {
         conf.rounds = Number(rounds[1])
         conf.specifyRounds = true
 
-        if (parts[3]) {
+        if (parts[3] || parts[3] === "") {
           conf.saltString = parts[3]
         }
       } else {
@@ -141,7 +144,7 @@ function parseSalt(salt?: string): IConf {
       : conf.rounds
 
   // sanity-check saltString
-  conf.saltString = conf.saltString.substr(0, 16)
+  conf.saltString = conf.saltString.substring(0, 16)
 
   if (conf.saltString.match("[^./0-9A-Za-z]")) {
     throw new Error("Invalid salt string")
