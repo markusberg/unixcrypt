@@ -11,5 +11,6 @@
     "strict": true,
     "rootDir": "src"
   },
+  "include": ["src/**/*.ts"],
   "exclude": ["**/*.test.ts"]
 }
