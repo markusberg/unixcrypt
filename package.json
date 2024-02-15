@@ -11,7 +11,7 @@
     "clean": "rimraf dist",
     "prep": "npm install && husky && chmod ug+x .husky/*",
     "prepublishOnly": "npm run build",
-    "test": "vitest run --coverage",
+    "test": "vitest run --coverage.enabled --coverage.reporter=json-summary",
     "test:watch": "vitest watch",
     "test:watch:coverage": "vitest watch --coverage"
   },
