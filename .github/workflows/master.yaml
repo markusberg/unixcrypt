@@ -2,11 +2,15 @@ name: Node.js 18.x, 20.x build
 
 on:
   push:
-    branches: [master]
+    branches: [master, feat/v2.0]
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
+    concurrency:
+      group: testbuilds
+      cancel-in-progress: false
 
     strategy:
       matrix:
@@ -22,5 +26,14 @@ jobs:
       - run: npm run build --if-present
       - run: npm test
 
+      - name: Get npm version
+        id: get-npm-version
+        shell: bash
+        run: |
+          VERSION=$(node -p 't=require(`./package.json`).version')
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Update Coverage Badge
-        uses: we-cli/coverage-badge-action@main
+        uses: markusberg/coverage-badge-action@main
+        with:
+          version: ${{ format('-{0}', steps.get-npm-version.outputs.VERSION) }}
