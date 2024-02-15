@@ -1,4 +1,6 @@
-import { encrypt, verify } from "../"
+import { encrypt, verify } from "./index.js"
+import { describe, it } from "vitest"
+import { strict as assert } from "node:assert"
 
 /**
  * These tests are copied from the Public Domain reference implementation by Ulrich Drepper
@@ -46,50 +48,50 @@ describe("Encryption", () => {
   it("Should pass standard test suite", () => {
     const data = tests2[0]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should properly truncate too long salt strings", () => {
     const data = tests2[1]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should properly truncate too long salt strings, and propagate rounds-string even if it's the default", () => {
     const data = tests2[2]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle long salt and long password", () => {
     const data = tests2[3]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle short salt with long password", () => {
     const data = tests2[4]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle short salt with shorter password", () => {
     const data = tests2[5]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should not allow rounds fewer than 1000", () => {
     const data = tests2[6]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   // Tests collected from other sources
@@ -100,8 +102,8 @@ describe("Encryption", () => {
       "$6$salt$3aEJgflnzWuw1O3tr0IYSmhUY0cZ7iBQeBP392T7RXjLP3TKKu3ddIapQaCpbD4p9ioeGaVIjOHaym7HvCuUm0",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should pass extended test suite with rounds specified", () => {
@@ -111,8 +113,8 @@ describe("Encryption", () => {
       "$6$rounds=1000$salt$NqhXojlgP5NLvJojBnjQD87i66jhb8s3bZord3hSZoIgbCJqUfJdp7pclsLBBqgn02fAtd/vn4lieLeX5J.h90",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle sha256crypt as well", () => {
@@ -122,8 +124,8 @@ describe("Encryption", () => {
       "$5$rounds=5000$3a1afb28e54a0391$0d6RupbpABtxCaH8WWOemYwEcToDVZXX/tHpIy6O1U3",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle sha256crypt with additional rounds", () => {
@@ -133,8 +135,8 @@ describe("Encryption", () => {
       "$5$rounds=10000$b2c0a3ef466b2ec7$2.jZTNfaxIRW5CbTLoXiga/oUEA3bE9E1jgdquXq5R.",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle sha256crypt with short salt", () => {
@@ -144,8 +146,8 @@ describe("Encryption", () => {
       "$5$salt$hiNtIdUiCzVfs12fahM0sjQcF6XU0yE5G46VOsYmS4D",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle sha256crypt with long salt", () => {
@@ -155,8 +157,8 @@ describe("Encryption", () => {
       "$5$averylongsaltstr$Tm/C6ErlCKkargHckqaFwBcFTdUdps1p.B3SFRCBue8",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should handle multibyte characters", () => {
@@ -166,16 +168,20 @@ describe("Encryption", () => {
       "$6$a7a5dc2fa314dda0$E1GTcgT52oJFvhETaKwBk26Gy0GIzNQu2Mv4.UZwXp00CQi/8vC3IQKcrmpqbUaM2jFMOcDoShcxo1Mrt/Z5k/",
     ]
     const compute = encrypt(data[1], data[0])
-    expect(compute).toEqual(data[2])
-    expect(verify(data[1], data[2])).toBe(true)
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
   })
 
   it("Should throw an exception when used with any other crypto than sha256 or sha512", () => {
     const data = ["$1$4WZnIm8V", "pass", "$1$4WZnIm8V$Sg8KVWIq4rKfNz3Z23jZK0"]
-    expect(() => encrypt(data[1], data[0])).toThrow(
+    assert.throws(
+      () => encrypt(data[1], data[0]),
+      Error,
       "Only sha256 and sha512 is supported by this library",
     )
-    expect(() => verify(data[1], data[2])).toThrow(
+    assert.throws(
+      () => verify(data[1], data[2]),
+      Error,
       "Only sha256 and sha512 is supported by this library",
     )
   })
@@ -186,8 +192,8 @@ describe("Encryption", () => {
       "asdf£",
       "$6$invalid-salt$this is moot because the salt is invalid",
     ]
-    expect(() => encrypt(data[1], data[0])).toThrow("Invalid salt string")
-    expect(() => verify(data[1], data[2])).toThrow("Invalid salt string")
+    assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
+    assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
   })
 
   it("Should throw an exception when the salt string contains too many '$'-characters", () => {
@@ -196,8 +202,8 @@ describe("Encryption", () => {
       "pass",
       "$6$invalid$salt$string$this is moot because the salt is invalid",
     ]
-    expect(() => encrypt(data[1], data[0])).toThrow("Invalid salt string")
-    expect(() => verify(data[1], data[2])).toThrow("Invalid salt string")
+    assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
+    assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
   })
 
   it("Should throw an exception when the rounds-part of the salt is malformed", () => {
@@ -206,8 +212,8 @@ describe("Encryption", () => {
       "pass",
       "$6$round=5000$salt$this is moot because the salt is invalid",
     ]
-    expect(() => encrypt(data[1], data[0])).toThrow("Invalid salt string")
-    expect(() => verify(data[1], data[2])).toThrow("Invalid salt string")
+    assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
+    assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
   })
 
   it("Should be possible to only specify the SHA-type", () => {
@@ -215,7 +221,7 @@ describe("Encryption", () => {
     const salt = "$6"
     // this should not throw an exception
     const compute = encrypt(plaintext, salt)
-    expect(verify(plaintext, compute)).toBe(true)
+    assert.equal(verify(plaintext, compute), true)
   })
 
   it("Should be possible to only specify the SHA-type, and the number of rounds", () => {
@@ -223,14 +229,14 @@ describe("Encryption", () => {
     const salt = "$6$rounds=10000"
     // this should not throw an exception
     const compute = encrypt(plaintext, salt)
-    expect(verify(plaintext, compute)).toBe(true)
+    assert.equal(verify(plaintext, compute), true)
   })
 
   it("Should be possible to not specify a salt at all", () => {
     const plaintext = "Plaintext password"
     // this should not throw an exception
     const compute = encrypt(plaintext)
-    expect(verify(plaintext, compute)).toBe(true)
+    assert.equal(verify(plaintext, compute), true)
   })
 
   describe("proper handling of a salt value of empty string", () => {
@@ -242,8 +248,8 @@ describe("Encryption", () => {
       // generated via python3 passlib
       const expected = "$5$$N4LFaQGbHo.i9hNn66aHdu9x4vZPEBTPaQLsHflcuz6"
 
-      expect(verify(plaintext, expected)).toBe(true)
-      expect(computed).toBe(expected)
+      assert.equal(verify(plaintext, expected), true)
+      assert.equal(computed, expected)
     })
 
     it("should handle a custom number of rounds", () => {
@@ -255,8 +261,8 @@ describe("Encryption", () => {
       const expected =
         "$5$rounds=4000$$CHEsdlQ9TAiLmI4PkGkez4Ny1dIgHa.4ZTzCYGhRzK0"
 
-      expect(verify(plaintext, expected)).toBe(true)
-      expect(computed).toBe(expected)
+      assert.equal(verify(plaintext, expected), true)
+      assert.equal(computed, expected)
     })
   })
 
@@ -268,7 +274,7 @@ describe("Encryption", () => {
   //   const salt = "$6$rounds=1000000000$salt";
   //   const hash = "";
   //   const compute = encrypt(plaintext, salt);
-  //   expect(compute).toEqual(hash);
+  //   expect(compute, hash);
   //   expect(verify(plaintext, hash)).toBe(true);
   // });
 })

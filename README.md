@@ -12,7 +12,7 @@ https://www.akkadia.org/drepper/SHA-crypt.txt
 
 This package has no external dependencies. It uses the cryptographic facilities built into Node.js.
 
-For development, there are dependencies on TypeScript, Jest, Chai, ts-node.
+For development, there are dependencies on TypeScript, and vitest.
 
 ## Goals and motivation
 
@@ -32,18 +32,7 @@ $ npm install unixcrypt
 
 ### JavaScript
 
-The JavaScript usage is similar to the TypeScript below, but you'll want to use the `require("unixcrypt")` construct instead of `import ...`
-
-```javascript
-var unixcrypt = require("unixcrypt")
-
-const plaintextPassword = "password"
-const pwHash = unixcrypt.encrypt(plaintextPassword)
-
-// verify password with generated hash
-console.log(unixcrypt.verify(plaintextPassword, pwHash))
-// true
-```
+The JavaScript usage should be identical to the TypeScript below.
 
 ### TypeScript
 
@@ -82,7 +71,7 @@ console.log(verify(plaintextPassword, sha256))
 
 ## Test
 
-The tests are written with [Chai](http://www.chaijs.com/), and [Jest](https://jestjs.io/) by way of [ts-jest](https://github.com/kulshekhar/ts-jest).
+The tests are written with the built-in [node:assert](https://nodejs.org/api/assert.html) module, using the [vitest](https://vitest.dev/) test runner.
 
 ```sh
 $ npm test

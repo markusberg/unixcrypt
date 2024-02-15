@@ -1,5 +1,5 @@
-import { createHash, timingSafeEqual, randomInt } from "crypto"
-import { Buffer } from "buffer"
+import { createHash, timingSafeEqual, randomInt } from "node:crypto"
+import { Buffer } from "node:buffer"
 
 interface IConf {
   id: HashType
@@ -139,9 +139,9 @@ function parseSalt(salt?: string): IConf {
     conf.rounds < roundsMin
       ? roundsMin
       : conf.rounds > roundsMax
-      ? /* istanbul ignore next */
-        (conf.rounds = roundsMax)
-      : conf.rounds
+        ? /* istanbul ignore next */
+          (conf.rounds = roundsMax)
+        : conf.rounds
 
   // sanity-check saltString
   conf.saltString = conf.saltString.substring(0, 16)

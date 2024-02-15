@@ -1,14 +1,15 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "esModuleInterop": true,
-    "target": "es2017",
-    "moduleResolution": "node",
+    "target": "ES2022",
     "sourceMap": true,
     "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
-    "strict": true
+    "strict": true,
+    "rootDir": "src"
   },
-  "exclude": ["test"]
+  "exclude": ["**/*.test.ts"]
 }
