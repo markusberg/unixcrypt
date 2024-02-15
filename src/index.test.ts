@@ -44,7 +44,7 @@ const tests2 = [
   ],
 ]
 
-describe("Encryption", () => {
+describe("The standard and extended test suites", () => {
   it("Should pass standard test suite", () => {
     const data = tests2[0]
     const compute = encrypt(data[1], data[0])
@@ -52,6 +52,31 @@ describe("Encryption", () => {
     assert.equal(verify(data[1], data[2]), true)
   })
 
+  // Tests collected from other sources
+  it("Should pass extended test suite", () => {
+    const data = [
+      "$6$salt",
+      "pass",
+      "$6$salt$3aEJgflnzWuw1O3tr0IYSmhUY0cZ7iBQeBP392T7RXjLP3TKKu3ddIapQaCpbD4p9ioeGaVIjOHaym7HvCuUm0",
+    ]
+    const compute = encrypt(data[1], data[0])
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
+  })
+
+  it("Should pass extended test suite with rounds specified", () => {
+    const data = [
+      "$6$rounds=1000$salt",
+      "pass",
+      "$6$rounds=1000$salt$NqhXojlgP5NLvJojBnjQD87i66jhb8s3bZord3hSZoIgbCJqUfJdp7pclsLBBqgn02fAtd/vn4lieLeX5J.h90",
+    ]
+    const compute = encrypt(data[1], data[0])
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
+  })
+})
+
+describe("salt handling", () => {
   it("Should properly truncate too long salt strings", () => {
     const data = tests2[1]
     const compute = encrypt(data[1], data[0])
@@ -87,36 +112,35 @@ describe("Encryption", () => {
     assert.equal(verify(data[1], data[2]), true)
   })
 
-  it("Should not allow rounds fewer than 1000", () => {
-    const data = tests2[6]
-    const compute = encrypt(data[1], data[0])
-    assert.equal(compute, data[2])
-    assert.equal(verify(data[1], data[2]), true)
-  })
+  describe("proper handling of a salt value of empty string", () => {
+    it("should properly handle a default number of rounds", () => {
+      const plaintext = "Plaintext password"
+      const salt = "$5$"
+      const computed = encrypt(plaintext, salt)
 
-  // Tests collected from other sources
-  it("Should pass extended test suite", () => {
-    const data = [
-      "$6$salt",
-      "pass",
-      "$6$salt$3aEJgflnzWuw1O3tr0IYSmhUY0cZ7iBQeBP392T7RXjLP3TKKu3ddIapQaCpbD4p9ioeGaVIjOHaym7HvCuUm0",
-    ]
-    const compute = encrypt(data[1], data[0])
-    assert.equal(compute, data[2])
-    assert.equal(verify(data[1], data[2]), true)
-  })
+      // generated via python3 passlib
+      const expected = "$5$$N4LFaQGbHo.i9hNn66aHdu9x4vZPEBTPaQLsHflcuz6"
 
-  it("Should pass extended test suite with rounds specified", () => {
-    const data = [
-      "$6$rounds=1000$salt",
-      "pass",
-      "$6$rounds=1000$salt$NqhXojlgP5NLvJojBnjQD87i66jhb8s3bZord3hSZoIgbCJqUfJdp7pclsLBBqgn02fAtd/vn4lieLeX5J.h90",
-    ]
-    const compute = encrypt(data[1], data[0])
-    assert.equal(compute, data[2])
-    assert.equal(verify(data[1], data[2]), true)
-  })
+      assert.equal(verify(plaintext, expected), true)
+      assert.equal(computed, expected)
+    })
 
+    it("should handle a custom number of rounds", () => {
+      const plaintext = "Plaintext password"
+      const salt = "$5$rounds=4000$"
+      const computed = encrypt(plaintext, salt)
+
+      // generated via python3 passlib
+      const expected =
+        "$5$rounds=4000$$CHEsdlQ9TAiLmI4PkGkez4Ny1dIgHa.4ZTzCYGhRzK0"
+
+      assert.equal(verify(plaintext, expected), true)
+      assert.equal(computed, expected)
+    })
+  })
+})
+
+describe("sha256 crypt handling", () => {
   it("Should handle sha256crypt as well", () => {
     const data = [
       "$5$rounds=5000$3a1afb28e54a0391",
@@ -160,6 +184,15 @@ describe("Encryption", () => {
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
   })
+})
+
+describe("Miscellaneous", () => {
+  it("Should not allow rounds fewer than 1000", () => {
+    const data = tests2[6]
+    const compute = encrypt(data[1], data[0])
+    assert.equal(compute, data[2])
+    assert.equal(verify(data[1], data[2]), true)
+  })
 
   it("Should handle multibyte characters", () => {
     const data = [
@@ -172,6 +205,31 @@ describe("Encryption", () => {
     assert.equal(verify(data[1], data[2]), true)
   })
 
+  it("Should be possible to only specify the SHA-type", () => {
+    const plaintext = "Plaintext password"
+    const salt = "$6"
+    // this should not throw an exception
+    const compute = encrypt(plaintext, salt)
+    assert.equal(verify(plaintext, compute), true)
+  })
+
+  it("Should be possible to only specify the SHA-type, and the number of rounds", () => {
+    const plaintext = "Plaintext password"
+    const salt = "$6$rounds=10000"
+    // this should not throw an exception
+    const compute = encrypt(plaintext, salt)
+    assert.equal(verify(plaintext, compute), true)
+  })
+
+  it("Should be possible to not specify a salt at all", () => {
+    const plaintext = "Plaintext password"
+    // this should not throw an exception
+    const compute = encrypt(plaintext)
+    assert.equal(verify(plaintext, compute), true)
+  })
+})
+
+describe("Invalid inputs", () => {
   it("Should throw an exception when used with any other crypto than sha256 or sha512", () => {
     const data = ["$1$4WZnIm8V", "pass", "$1$4WZnIm8V$Sg8KVWIq4rKfNz3Z23jZK0"]
     assert.throws(
@@ -214,56 +272,6 @@ describe("Encryption", () => {
     ]
     assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
     assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
-  })
-
-  it("Should be possible to only specify the SHA-type", () => {
-    const plaintext = "Plaintext password"
-    const salt = "$6"
-    // this should not throw an exception
-    const compute = encrypt(plaintext, salt)
-    assert.equal(verify(plaintext, compute), true)
-  })
-
-  it("Should be possible to only specify the SHA-type, and the number of rounds", () => {
-    const plaintext = "Plaintext password"
-    const salt = "$6$rounds=10000"
-    // this should not throw an exception
-    const compute = encrypt(plaintext, salt)
-    assert.equal(verify(plaintext, compute), true)
-  })
-
-  it("Should be possible to not specify a salt at all", () => {
-    const plaintext = "Plaintext password"
-    // this should not throw an exception
-    const compute = encrypt(plaintext)
-    assert.equal(verify(plaintext, compute), true)
-  })
-
-  describe("proper handling of a salt value of empty string", () => {
-    it("should properly handle a default number of rounds", () => {
-      const plaintext = "Plaintext password"
-      const salt = "$5$"
-      const computed = encrypt(plaintext, salt)
-
-      // generated via python3 passlib
-      const expected = "$5$$N4LFaQGbHo.i9hNn66aHdu9x4vZPEBTPaQLsHflcuz6"
-
-      assert.equal(verify(plaintext, expected), true)
-      assert.equal(computed, expected)
-    })
-
-    it("should handle a custom number of rounds", () => {
-      const plaintext = "Plaintext password"
-      const salt = "$5$rounds=4000$"
-      const computed = encrypt(plaintext, salt)
-
-      // generated via python3 passlib
-      const expected =
-        "$5$rounds=4000$$CHEsdlQ9TAiLmI4PkGkez4Ny1dIgHa.4ZTzCYGhRzK0"
-
-      assert.equal(verify(plaintext, expected), true)
-      assert.equal(computed, expected)
-    })
   })
 
   // LOL. This is not testable.
