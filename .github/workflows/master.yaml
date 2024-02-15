@@ -1,4 +1,4 @@
-name: Node.js 14.x, 16.x, 18.x build
+name: Node.js 18.x, 20.x build
 
 on:
   push:
@@ -10,7 +10,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [18.x, 20.x]
 
     steps:
       - uses: actions/checkout@v3
