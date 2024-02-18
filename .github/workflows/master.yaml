@@ -36,4 +36,4 @@ jobs:
       - name: Update Coverage Badge
         uses: markusberg/coverage-badge-action@main
         with:
-          version: ${{ format('-{0}', steps.get-npm-version.outputs.VERSION) }}
+          version: ${{ steps.get-npm-version.outputs.VERSION }}
