@@ -2,11 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [2.0.0] - 2024-02-15
+## [2.0.0] - 2024-02-18
 
 - feat: minimum required version of Node.js is 18.x
 - chore: update all packages
 - test: replace test runner with vitest
+- test: use built-in node:assert module
 
 ## [1.2.0] - 2023-04-16
 
