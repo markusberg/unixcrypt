@@ -4,6 +4,8 @@
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "type": "module",
   "exports": "./dist/index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc",
     "clean": "rimraf dist",
