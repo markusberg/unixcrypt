@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "type": "module",
   "exports": {
@@ -11,6 +11,7 @@
       }
     }
   },
+  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc",
     "clean": "rimraf dist",
