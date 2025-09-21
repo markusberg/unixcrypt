@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "2.0.3",
+  "version": "3.0.0",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "type": "module",
   "exports": {
@@ -13,16 +13,19 @@
   },
   "types": "./dist/index.d.ts",
   "scripts": {
-    "build": "rimraf dist && tsc",
-    "clean": "rimraf dist",
+    "build": "npm run clean && npm run build:prod",
+    "build:prod": "tsc -p ./tsconfig.prod.json",
+    "build:test": "tsc -p .",
+    "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf coverage && mkdir -p dist coverage",
     "prep": "npm install && husky && chmod ug+x .husky/*",
     "prepublishOnly": "npm run build",
-    "test": "vitest run --coverage.enabled --coverage.reporter=json-summary",
-    "test:watch": "vitest watch",
-    "test:watch:coverage": "vitest watch --coverage"
+    "test": "npm run clean && npm run test:one",
+    "test:one": "npm run build:test && node --enable-source-maps --test --experimental-test-coverage --test-reporter=spec --test-reporter=lcov --test-reporter-destination=stdout --test-reporter-destination=./coverage/lcov.info ./dist/**/*.test.js && npm run test:cov",
+    "test:cov": "lcov-parse --summary ./coverage/lcov.info > ./coverage/coverage-summary.json",
+    "test:watch": "npm run clean && nodemon -e ts -w ./src --exec 'npm run test:one'"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "repository": {
     "type": "git",
@@ -40,12 +43,16 @@
   },
   "homepage": "https://github.com/markusberg/unixcrypt#readme",
   "devDependencies": {
-    "@types/node": "^18.19.15",
-    "@vitest/coverage-v8": "^3.1.1",
+    "@markusberg/lcov-parse": "^2.0.1",
+    "@types/node": "^24.5.2",
     "husky": "^9.1.7",
-    "prettier": "^3.5.3",
-    "rimraf": "^5.0.5",
-    "typescript": "^5.8.2",
-    "vitest": "^3.1.1"
+    "lint-staged": "^16.1.6",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.9.2"
+  },
+  "lint-staged": {
+    "(*.ts|*.md)": "prettier --write --check"
   }
 }

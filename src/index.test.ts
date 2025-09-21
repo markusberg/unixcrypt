@@ -1,6 +1,7 @@
-import { encrypt, verify } from "./index.js"
-import { describe, it } from "vitest"
 import { strict as assert } from "node:assert"
+import { describe, it } from "node:test"
+
+import { encrypt, verify } from "./index.js"
 
 /**
  * These tests are copied from the Public Domain reference implementation by Ulrich Drepper

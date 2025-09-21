@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.0] - 2025-09-21
+
+- feat: minimum required version of Node.Js is 20.x
+- chore: update all packages
+- test: replace vitest with built-in node test runner
+
 ## [2.0.0] - 2024-02-18
 
 - feat: minimum required version of Node.js is 18.x

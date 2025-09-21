@@ -8,21 +8,20 @@ interface IConf {
   specifyRounds: boolean
 }
 
-enum HashType {
-  "sha256" = 5,
-  "sha512" = 6,
-}
+type HashType = 5 | 6
+type Algorithm = "sha256" | "sha512"
 
-interface IShuffleMap {
-  sha256: number[]
-  sha512: number[]
-}
+const HashMap: Record<HashType, { algorithm: Algorithm; digestSize: number }> =
+  {
+    5: { algorithm: "sha256", digestSize: 32 },
+    6: { algorithm: "sha512", digestSize: 64 },
+  }
 
 const dictionary =
   "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 
 // prettier-ignore
-const shuffleMap: IShuffleMap = {
+const shuffleMap: Record<Algorithm, number[]> = {
   sha256: [
     20, 10,  0,
     11,  1, 21,
@@ -68,7 +67,7 @@ const roundsDefault = 5000
  * @param length Length of salt
  */
 function getRandomString(length: number): string {
-  var result = ""
+  let result = ""
   for (let i = 0; i < length; i++) {
     result += dictionary[randomInt(0, dictionary.length - 1)]
   }
@@ -98,7 +97,7 @@ function parseSalt(salt?: string): IConf {
   const roundsMax = 999999999
 
   const conf: IConf = {
-    id: HashType.sha512,
+    id: 6,
     saltString: getRandomString(16),
     rounds: roundsDefault,
     specifyRounds: false,
@@ -106,9 +105,9 @@ function parseSalt(salt?: string): IConf {
 
   if (salt) {
     const parts = salt.split("$")
-    conf.id = Number(parts[1])
+    conf.id = Number(parts[1]) as HashType
 
-    if (conf.id !== HashType.sha256 && conf.id !== HashType.sha512) {
+    if (!HashMap[conf.id]) {
       throw new Error("Only sha256 and sha512 is supported by this library")
     }
 
@@ -159,14 +158,15 @@ function parseSalt(salt?: string): IConf {
  * @param conf
  */
 function generateDigestA(plaintext: string, conf: IConf): Buffer {
-  const digestSize = conf.id === HashType.sha256 ? 32 : 64
+  const algorithm: Algorithm = HashMap[conf.id].algorithm
+  const digestSize: number = HashMap[conf.id].digestSize
 
   // steps 1-8
-  const hashA = createHash(HashType[conf.id])
+  const hashA = createHash(algorithm)
   hashA.update(plaintext)
   hashA.update(conf.saltString)
 
-  const hashB = createHash(HashType[conf.id])
+  const hashB = createHash(algorithm)
   hashB.update(plaintext)
   hashB.update(conf.saltString)
   hashB.update(plaintext)
@@ -200,15 +200,15 @@ function generateDigestA(plaintext: string, conf: IConf): Buffer {
 }
 
 function generateHash(plaintext: string, conf: IConf): string {
-  const digestSize = conf.id === HashType.sha256 ? 32 : 64
-  const hashType = HashType[conf.id]
+  const algorithm: Algorithm = HashMap[conf.id].algorithm
+  const digestSize: number = HashMap[conf.id].digestSize
 
   // steps 1-12
   const digestA = generateDigestA(plaintext, conf)
 
   // steps 13-15
   const plaintextByteLength = Buffer.byteLength(plaintext)
-  const hashDP = createHash(hashType)
+  const hashDP = createHash(algorithm)
   for (let i = 0; i < plaintextByteLength; i++) {
     hashDP.update(plaintext)
   }
@@ -229,7 +229,7 @@ function generateHash(plaintext: string, conf: IConf): string {
   p.set(digestDP.slice(0, remainder), plaintextByteLength - remainder)
 
   // step 17-19
-  const hashDS = createHash(hashType)
+  const hashDS = createHash(algorithm)
   const step18 = 16 + digestA[0]
   for (let i = 0; i < step18; i++) {
     hashDS.update(conf.saltString)
@@ -258,7 +258,7 @@ function generateHash(plaintext: string, conf: IConf): string {
   // step 21
   const rounds = Array(conf.rounds).fill(0)
   const digestC: Buffer = rounds.reduce((acc, curr, idx) => {
-    const hashC = createHash(hashType)
+    const hashC = createHash(algorithm)
 
     // steps b-c
     if (idx % 2 === 0) {
@@ -288,7 +288,7 @@ function generateHash(plaintext: string, conf: IConf): string {
   }, digestA)
 
   // step 22
-  return base64Encode(digestC, (<any>shuffleMap)[hashType])
+  return base64Encode(digestC, shuffleMap[algorithm])
 }
 
 function base64Encode(digest: Buffer, shuffleMap: number[]): string {
