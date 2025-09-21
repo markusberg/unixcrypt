@@ -2,15 +2,21 @@
   "compilerOptions": {
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
+
     "esModuleInterop": true,
     "target": "ES2022",
     "sourceMap": true,
-    "outDir": "./dist",
     "declaration": true,
     "declarationMap": true,
     "strict": true,
-    "rootDir": "src"
+    "incremental": true,
+
+    "verbatimModuleSyntax": true,
+    "erasableSyntaxOnly": true,
+
+    "rootDir": "src",
+    "outDir": "./dist",
+    "baseUrl": "./"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["**/*.test.ts"]
+  "include": ["src/**/*.ts"]
 }

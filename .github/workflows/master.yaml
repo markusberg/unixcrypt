@@ -1,8 +1,8 @@
-name: Node.js 18.x, 20.x build
+name: Node.js 24.x build
 
 on:
   push:
-    branches: [master, feat/v2.0]
+    branches: [master, feat/v3.0]
 
 jobs:
   build:
@@ -14,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [24.x]
 
     steps:
       - uses: actions/checkout@v4
