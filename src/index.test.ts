@@ -279,11 +279,11 @@ describe("Invalid inputs", () => {
   // FATAL ERROR: invalid table size Allocation failed - JavaScript heap out of memory
 
   // it("Should be reduce the number of rounds if larger than 999,999,999", () => {
-  //   const plaintext = "Plaintext password";
-  //   const salt = "$6$rounds=1000000000$salt";
-  //   const hash = "";
-  //   const compute = encrypt(plaintext, salt);
-  //   expect(compute, hash);
-  //   expect(verify(plaintext, hash)).toBe(true);
-  // });
+  //   const plaintext = "Plaintext password"
+  //   const salt = "$6$rounds=1000000000$salt"
+  //   const hash = ""
+  //   const compute = encrypt(plaintext, salt)
+  //   assert.equal(compute, hash)
+  //   assert.equal(verify(plaintext, hash), true)
+  // })
 })

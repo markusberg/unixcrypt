@@ -1,8 +1,8 @@
 # Unixcrypt for Node.js
 
 [![node.js build](https://github.com/markusberg/unixcrypt/actions/workflows/master.yaml/badge.svg)](https://github.com/markusberg/unixcrypt/actions/workflows/master.yaml)
-[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage-2.0.0.svg)](https://github.com/markusberg/unixcrypt/actions)
-[![version](https://img.shields.io/npm/v/unixcrypt.svg)](https://codecov.io/github/markusberg/unixcrypt)
+[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage-3.0.1.svg)](https://github.com/markusberg/unixcrypt/actions)
+![version](https://img.shields.io/npm/v/unixcrypt.svg)
 [![license](https://img.shields.io/github/license/markusberg/unixcrypt.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
 A Node.js module for encrypting and verifying passwords according to the SHA-256 and SHA-512 Crypt standard:
@@ -12,7 +12,7 @@ https://www.akkadia.org/drepper/SHA-crypt.txt
 
 This package has no external dependencies. It uses the cryptographic facilities built into Node.js. Since version 2.0 this package is ESModule only. If you require CommonJS functionality, you can still use the 1.x version.
 
-For development, there are dependencies on TypeScript, and vitest.
+For development, there are dependencies on TypeScript, and Node.Js v24.
 
 ## Goals and motivation
 

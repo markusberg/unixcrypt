@@ -134,13 +134,11 @@ function parseSalt(salt?: string): IConf {
   }
 
   // sanity-check rounds
-  conf.rounds =
-    conf.rounds < roundsMin
-      ? roundsMin
-      : conf.rounds > roundsMax
-        ? /* istanbul ignore next */
-          (conf.rounds = roundsMax)
-        : conf.rounds
+  if (conf.rounds < roundsMin) {
+    conf.rounds = roundsMin
+  } else if (conf.rounds > roundsMax) {
+    conf.rounds = roundsMax
+  }
 
   // sanity-check saltString
   conf.saltString = conf.saltString.substring(0, 16)
@@ -247,7 +245,6 @@ function generateHash(plaintext: string, conf: IConf): string {
     offset + digestSize < saltByteLength;
     offset += digestSize
   ) {
-    /* istanbul ignore next */
     s.set(digestDS, offset)
   }
 
