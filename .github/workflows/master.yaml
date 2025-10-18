@@ -2,7 +2,7 @@ name: Node.js 24.x build
 
 on:
   push:
-    branches: [master, feat/v3.0.1]
+    branches: [master, release/**]
 
 jobs:
   build:

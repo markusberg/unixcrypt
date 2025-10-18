@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.2] - 2025-10-18
+
+- Improve JSDoc documentation
+- Remove last vitest reference from README.md
+
+## [3.0.1] - 2025-09-28
+
+- Remove references to vitest from README.md
+
 ## [3.0.0] - 2025-09-21
 
 - feat: minimum required version of Node.Js is 20.x
