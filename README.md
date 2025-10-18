@@ -71,7 +71,7 @@ console.log(verify(plaintextPassword, sha256))
 
 ## Test
 
-The tests are written with the built-in [node:assert](https://nodejs.org/api/assert.html) module, using the [vitest](https://vitest.dev/) test runner.
+The tests are written with the built-in [node:assert](https://nodejs.org/api/assert.html) module, and are run in the Node.Js test runner. The test runner didn't get good enough coverage reporting until v24, so that's the reason for the minimum required version of v24 for building and testing.
 
 ```sh
 $ npm test

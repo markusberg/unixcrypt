@@ -325,22 +325,42 @@ function bufferToBase64(buf: Buffer): string {
 }
 
 /**
- * Create sha256 or sha512 crypt of plaintext password
- * @param plaintext The plaintext password
- * @param salt optional salt, for example "$6$salt" or "$6$rounds=10000$salt"
+ * Create a SHA-256 or SHA-512 hash of a plaintext password using the unixcrypt format.
+ *
+ * @param plaintext - The password to encrypt
+ * @param salt - Optional salt string in Unix crypt format. Examples:
+ *   - "$6$salt" - Use SHA-512 with default rounds
+ *   - "$6$rounds=10000$salt" - Use SHA-512 with 10000 rounds
+ *   - "$5$salt" - Use SHA-256 with default rounds
+ *   If omitted, generates SHA-512 hash with random salt
+ * @returns The complete hash string in Unix crypt format
+ * @example
+ * // Generate SHA-512 hash with random salt
+ * encrypt("mypassword")
+ * // -> "$6$WHT0QXyF$LQv3c1yqBWVHxkd0LHAkC..."
+ *
+ * // Generate SHA-512 hash with specific salt and rounds
+ * encrypt("mypassword", "$6$rounds=10000$saltvalue")
+ * // -> "$6$rounds=10000$saltvalue$LQv3c1yq..."
  */
-function encrypt(plaintext: string, salt?: string): string {
+export function encrypt(plaintext: string, salt?: string): string {
   const conf = parseSalt(salt)
   const hash = generateHash(plaintext, conf)
   return normalizeSalt(conf) + "$" + hash
 }
 
 /**
- * Verify plaintext password against expected hash
- * @param plaintext The plaintext password
- * @param hash The expected hash
+ * Verify a plaintext password against an existing unixcrypt hash.
+ *
+ * @param plaintext - The password to verify
+ * @param hash - The complete hash string to verify against (including salt and rounds)
+ * @returns True if the plaintext matches the hash, false otherwise
+ * @example
+ * // Verify password against hash
+ * verify("mypassword", "$6$WHT0QXyF$LQv3c1yqBWVHxkd0LHAkC...")
+ * // -> true or false
  */
-function verify(plaintext: string, hash: string): boolean {
+export function verify(plaintext: string, hash: string): boolean {
   const salt = hash.slice(0, hash.lastIndexOf("$"))
   const computedHash = encrypt(plaintext, salt)
 
@@ -349,5 +369,3 @@ function verify(plaintext: string, hash: string): boolean {
     Buffer.from(hash, "utf8"),
   )
 }
-
-export { encrypt, verify }
