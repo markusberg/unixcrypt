@@ -1,8 +1,8 @@
-name: Node.js 24.x build
+name: Node.Js 24.x build
 
 on:
   push:
-    branches: [master, release/**]
+    branches: [release/**]
 
 jobs:
   build:
@@ -32,6 +32,15 @@ jobs:
         run: |
           VERSION=$(node -p 't=require(`./package.json`).version')
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Verify Coverage Badge Version in README.md
+        shell: bash
+        run: |
+          BADGE_VERSION=$(grep -oP 'coverage-\K(\d+\.\d+\.\d+)(?=\.svg)' README.md)
+          if [ "$BADGE_VERSION" != "${{ steps.get-npm-version.outputs.VERSION }}" ]; then
+            echo "Error: Coverage badge version ($BADGE_VERSION) does not match package version (${{ steps.get-npm-version.outputs.VERSION }})"
+            exit 1
+          fi
 
       - name: Update Coverage Badge
         uses: markusberg/coverage-badge-action@main
