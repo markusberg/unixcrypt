@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.0.4] - 2025-12-14
+
+- Update packages
+
+## [3.0.3] - 2025-10-20
+
+- Bump package version
+
 ## [3.0.2] - 2025-10-18
 
 - Improve JSDoc documentation
