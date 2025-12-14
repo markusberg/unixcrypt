@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "3.0.3",
+  "version": "3.0.4",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "type": "module",
   "exports": {
@@ -43,14 +43,14 @@
   },
   "homepage": "https://github.com/markusberg/unixcrypt#readme",
   "devDependencies": {
-    "@markusberg/lcov-parse": "^2.0.1",
+    "@markusberg/lcov-parse": "^3.0.0",
     "@types/node": "^24.5.2",
     "husky": "^9.1.7",
-    "lint-staged": "^16.1.6",
-    "nodemon": "^3.1.10",
-    "prettier": "^3.6.2",
-    "rimraf": "^6.0.1",
-    "typescript": "^5.9.2"
+    "lint-staged": "^16.2.7",
+    "nodemon": "^3.1.11",
+    "prettier": "^3.7.4",
+    "rimraf": "^6.1.2",
+    "typescript": "^5.9.3"
   },
   "lint-staged": {
     "(*.ts|*.md)": "prettier --write --check"
