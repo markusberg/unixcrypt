@@ -1,8 +1,24 @@
 {
   "name": "unixcrypt",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
+  "keywords": [
+    "sha256crypt",
+    "sha512crypt",
+    "unixcrypt"
+  ],
+  "homepage": "https://github.com/markusberg/unixcrypt#readme",
+  "bugs": {
+    "url": "https://github.com/markusberg/unixcrypt/issues"
+  },
+  "license": "Apache-2.0",
+  "author": "Markus Berg",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/markusberg/unixcrypt.git"
+  },
   "type": "module",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -11,12 +27,15 @@
       }
     }
   },
-  "types": "./dist/index.d.ts",
   "scripts": {
     "build": "npm run clean && npm run build:prod",
     "build:prod": "tsc -p ./tsconfig.prod.json",
     "build:test": "tsc -p .",
     "clean": "rimraf dist && rimraf *.tsbuildinfo && rimraf coverage && mkdir -p dist coverage",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
     "prep": "npm install && husky && chmod ug+x .husky/*",
     "prepublishOnly": "npm run build",
     "test": "npm run clean && npm run test:one",
@@ -24,35 +43,23 @@
     "test:cov": "lcov-parse --summary ./coverage/lcov.info > ./coverage/coverage-summary.json",
     "test:watch": "npm run clean && nodemon -e ts -w ./src --exec 'npm run test:one'"
   },
-  "engines": {
-    "node": ">=20.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/markusberg/unixcrypt.git"
-  },
-  "keywords": [
-    "sha256crypt",
-    "sha512crypt",
-    "unixcrypt"
-  ],
-  "author": "Markus Berg",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/markusberg/unixcrypt/issues"
-  },
-  "homepage": "https://github.com/markusberg/unixcrypt#readme",
   "devDependencies": {
     "@markusberg/lcov-parse": "^3.0.0",
     "@types/node": "^24.5.2",
     "husky": "^9.1.7",
     "lint-staged": "^16.2.7",
     "nodemon": "^3.1.11",
-    "prettier": "^3.7.4",
+    "oxfmt": "^0.71.0",
+    "oxlint": "^1.86.0",
+    "oxlint-tsgolint": "^7.0.2003",
     "rimraf": "^6.1.2",
     "typescript": "^5.9.3"
   },
   "lint-staged": {
-    "(*.ts|*.md)": "prettier --write --check"
+    "*.{js,jsx,ts,tsx,mjs,cjs}": "npm run lint",
+    "*.{ts,html,json,md}": "npm run fmt"
+  },
+  "engines": {
+    "node": ">=20.0.0"
   }
 }

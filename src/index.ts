@@ -1,5 +1,5 @@
-import { createHash, timingSafeEqual, randomInt } from "node:crypto"
-import { Buffer } from "node:buffer"
+import { createHash, timingSafeEqual, randomInt } from 'node:crypto'
+import { Buffer } from 'node:buffer'
 
 interface IConf {
   id: HashType
@@ -9,18 +9,18 @@ interface IConf {
 }
 
 type HashType = 5 | 6
-type Algorithm = "sha256" | "sha512"
+type Algorithm = 'sha256' | 'sha512'
 
 const HashMap: Record<HashType, { algorithm: Algorithm; digestSize: number }> =
   {
-    5: { algorithm: "sha256", digestSize: 32 },
-    6: { algorithm: "sha512", digestSize: 64 },
+    5: { algorithm: 'sha256', digestSize: 32 },
+    6: { algorithm: 'sha512', digestSize: 64 },
   }
 
 const dictionary =
-  "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+  './0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 
-// prettier-ignore
+// oxfmt-ignore
 const shuffleMap: Record<Algorithm, number[]> = {
   sha256: [
     20, 10,  0,
@@ -67,7 +67,7 @@ const roundsDefault = 5000
  * @param length Length of salt
  */
 function getRandomString(length: number): string {
-  let result = ""
+  let result = ''
   for (let i = 0; i < length; i++) {
     result += dictionary[randomInt(dictionary.length)]
   }
@@ -79,12 +79,12 @@ function getRandomString(length: number): string {
  * @param conf The separate parts of id, rounds, specifyRounds, and saltString
  */
 function normalizeSalt(conf: IConf): string {
-  const parts = ["", conf.id]
+  const parts = ['', conf.id]
   if (conf.specifyRounds || conf.rounds !== roundsDefault) {
     parts.push(`rounds=${conf.rounds}`)
   }
   parts.push(conf.saltString)
-  return parts.join("$")
+  return parts.join('$')
 }
 
 /**
@@ -108,12 +108,12 @@ function parseSalt(salt?: string): IConf {
   if (salt) {
     const prefix = salt.match(/^\$([56])(\$|$)/)
     if (!prefix) {
-      throw new Error("Only sha256 and sha512 is supported by this library")
+      throw new Error('Only sha256 and sha512 is supported by this library')
     }
     conf.id = Number(prefix[1]) as HashType
 
     // "$6" only specifies the hash type
-    if (prefix[2] === "$") {
+    if (prefix[2] === '$') {
       let rest = salt.slice(prefix[0].length)
       const rounds = rest.match(/^rounds=(\d*)(\$|$)/)
 
@@ -127,9 +127,9 @@ function parseSalt(salt?: string): IConf {
       // "$6$rounds=1234" without a trailing "$" keeps the random salt. The
       // spec would treat "rounds=1234" as the salt, but this is a deliberate
       // convenience of this library
-      if (!rounds || rounds[2] === "$") {
+      if (!rounds || rounds[2] === '$') {
         // the salt may contain any character except "$", which terminates it
-        conf.saltString = rest.split("$")[0]
+        conf.saltString = rest.split('$')[0]
       }
     }
   }
@@ -147,7 +147,7 @@ function parseSalt(salt?: string): IConf {
     const truncated = saltBytes.subarray(0, saltMaxBytes).toString()
     if (Buffer.byteLength(truncated) !== saltMaxBytes) {
       throw new Error(
-        "Invalid salt string: truncating it to 16 bytes would split a multibyte character",
+        'Invalid salt string: truncating it to 16 bytes would split a multibyte character',
       )
     }
     conf.saltString = truncated
@@ -209,10 +209,10 @@ function generateDigestA(
   // step 11
   plaintextByteLength
     .toString(2)
-    .split("")
+    .split('')
     .reverse()
     .forEach((num) => {
-      hashA.update(num === "0" ? plaintext : digestB)
+      hashA.update(num === '0' ? plaintext : digestB)
     })
 
   // step 12
@@ -311,7 +311,7 @@ function generateHash(plaintext: string, conf: IConf, legacy = false): string {
 }
 
 function base64Encode(digest: Buffer, shuffleMap: number[]): string {
-  let hash = ""
+  let hash = ''
   for (let idx = 0; idx < digest.length; idx += 3) {
     const buf = Buffer.alloc(3)
     buf[0] = digest[shuffleMap[idx]]
@@ -330,14 +330,14 @@ function base64Encode(digest: Buffer, shuffleMap: number[]): string {
  * @param buf Buffer of bytes to be encoded
  */
 function bufferToBase64(buf: Buffer): string {
-  const first = buf[0] & parseInt("00111111", 2)
+  const first = buf[0] & parseInt('00111111', 2)
   const second =
-    ((buf[0] & parseInt("11000000", 2)) >>> 6) |
-    ((buf[1] & parseInt("00001111", 2)) << 2)
+    ((buf[0] & parseInt('11000000', 2)) >>> 6) |
+    ((buf[1] & parseInt('00001111', 2)) << 2)
   const third =
-    ((buf[1] & parseInt("11110000", 2)) >>> 4) |
-    ((buf[2] & parseInt("00000011", 2)) << 4)
-  const fourth = (buf[2] & parseInt("11111100", 2)) >>> 2
+    ((buf[1] & parseInt('11110000', 2)) >>> 4) |
+    ((buf[2] & parseInt('00000011', 2)) << 4)
+  const fourth = (buf[2] & parseInt('11111100', 2)) >>> 2
   return (
     dictionary.charAt(first) +
     dictionary.charAt(second) +
@@ -372,7 +372,7 @@ function bufferToBase64(buf: Buffer): string {
 export function encrypt(plaintext: string, salt?: string): string {
   const conf = parseSalt(salt)
   const hash = generateHash(plaintext, conf)
-  return normalizeSalt(conf) + "$" + hash
+  return normalizeSalt(conf) + '$' + hash
 }
 
 /**
@@ -417,12 +417,12 @@ export function verifyLegacy(plaintext: string, hash: string): boolean {
 }
 
 function verifyHash(plaintext: string, hash: string, legacy: boolean): boolean {
-  const conf = parseSalt(hash.slice(0, hash.lastIndexOf("$")))
+  const conf = parseSalt(hash.slice(0, hash.lastIndexOf('$')))
   const computedHash =
-    normalizeSalt(conf) + "$" + generateHash(plaintext, conf, legacy)
+    normalizeSalt(conf) + '$' + generateHash(plaintext, conf, legacy)
 
-  const computed = Buffer.from(computedHash, "utf8")
-  const expected = Buffer.from(hash, "utf8")
+  const computed = Buffer.from(computedHash, 'utf8')
+  const expected = Buffer.from(hash, 'utf8')
 
   // timingSafeEqual throws on buffers of different length, for example a truncated hash
   return (

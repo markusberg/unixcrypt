@@ -15,8 +15,7 @@
     "erasableSyntaxOnly": true,
 
     "rootDir": "src",
-    "outDir": "./dist",
-    "baseUrl": "./"
+    "outDir": "./dist"
   },
   "include": ["src/**/*.ts"]
 }

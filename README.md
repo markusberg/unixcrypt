@@ -1,7 +1,7 @@
 # Unixcrypt for Node.js
 
 [![node.js build](https://github.com/markusberg/unixcrypt/actions/workflows/badges.yaml/badge.svg)](https://github.com/markusberg/unixcrypt/actions/workflows/badges.yaml)
-[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage-4.0.0.svg)](https://github.com/markusberg/unixcrypt/actions)
+[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage-4.0.1.svg)](https://github.com/markusberg/unixcrypt/actions)
 [![version](https://img.shields.io/npm/v/unixcrypt.svg)](https://www.npmjs.com/package/unixcrypt)
 [![license](https://img.shields.io/github/license/markusberg/unixcrypt.svg)](./LICENSE)
 [![downloads](https://img.shields.io/npm/dt/unixcrypt.svg)](http://npm-stat.com/charts.html?package=unixcrypt)
@@ -38,9 +38,9 @@ The JavaScript usage is identical to the TypeScript below. The package is ESM on
 ### TypeScript
 
 ```typescript
-import { encrypt, verify } from "unixcrypt"
+import { encrypt, verify } from 'unixcrypt'
 
-const plaintextPassword = "password"
+const plaintextPassword = 'password'
 
 // without providing salt, SHA-512 is used with a random salt and the default number of rounds
 const pwHash = encrypt(plaintextPassword)
@@ -51,31 +51,31 @@ console.log(verify(plaintextPassword, pwHash))
 // true
 
 // specify number of rounds
-const moreRounds = encrypt(plaintextPassword, "$6$rounds=10000")
+const moreRounds = encrypt(plaintextPassword, '$6$rounds=10000')
 // $6$rounds=10000$iqCiJgtSFGKr/TKQ$WPgUmrD08llHSbrBbnIQYPuXBcVymch9HmDySDTMdDm9AAfGwQSs14RXKqy/sYBhwuBtLdmIFza1q6j9fGEMM/
 console.log(verify(plaintextPassword, moreRounds))
 // true
 
 // provide custom salt
-const customSalt = encrypt(plaintextPassword, "$6$salt")
+const customSalt = encrypt(plaintextPassword, '$6$salt')
 // $6$salt$IxDD3jeSOb5eB1CX5LBsqZFVkJdido3OUILO5Ifz5iwMuTS4XMS130MTSuDDl3aCI6WouIL9AjRbLCelDCy.g.
 console.log(verify(plaintextPassword, customSalt))
 // true
 
 // or provide both rounds and salt
-const customRoundsAndSalt = encrypt(plaintextPassword, "$6$rounds=10000$salt")
+const customRoundsAndSalt = encrypt(plaintextPassword, '$6$rounds=10000$salt')
 // $6$rounds=10000$salt$dE5fLfpn2uXfkz.eouwYK/BjrHRu.piovQPjwlE06fDJHwMlg2l.IqEBUIfWBzf7YPXOAddB3FM7rnXHHKVNt.
 console.log(verify(plaintextPassword, customRoundsAndSalt))
 // true
 
 // you can also use SHA-256
-const sha256 = encrypt(plaintextPassword, "$5")
+const sha256 = encrypt(plaintextPassword, '$5')
 // $5$Joama98FiN5zL7zN$bQvLuqChyXvRCU2X1VXbAECsxfqAskaoypzmZEvQuA2
 console.log(verify(plaintextPassword, sha256))
 // true
 
 // a wrong password doesn't verify
-console.log(verify("wrong password", pwHash))
+console.log(verify('wrong password', pwHash))
 // false
 ```
 
@@ -94,7 +94,7 @@ Versions up to and including 3.0.4 produced incorrect hashes for passwords whose
 Use `verifyLegacy()` as a fallback, and re-hash the password when it succeeds:
 
 ```typescript
-import { encrypt, verify, verifyLegacy } from "unixcrypt"
+import { encrypt, verify, verifyLegacy } from 'unixcrypt'
 
 /**
  * Check a password against its stored hash. Returns false if the password is

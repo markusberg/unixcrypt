@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.1] - 2026-09-30
+
+- chore: replace Prettier with oxlint and oxfmt
+- chore: remove the unused `baseUrl` from tsconfig.json
+
 ## [4.0.0] - 2026-09-30
 
 - BREAKING fix: incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size (32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512). Hashes of such passwords created by earlier versions no longer pass `verify()`. See "Hashes created by version 3.0.4 or earlier" in README.md for how to migrate them
