@@ -43,7 +43,7 @@ const tests2 = [
     'the minimum number is still observed',
     '$6$rounds=1000$roundstoolow$kUMsbe306n21p9R.FRkW3IGn.S9NPN0x50YhH1xhLsPuWGsUSklZt58jaTfF4ZEQpyUNGc0dqbpBYYBaHHrsX.',
   ],
-]
+] as const
 
 describe('The standard and extended test suites', () => {
   it('Should pass standard test suite', () => {
@@ -59,7 +59,7 @@ describe('The standard and extended test suites', () => {
       '$6$salt',
       'pass',
       '$6$salt$3aEJgflnzWuw1O3tr0IYSmhUY0cZ7iBQeBP392T7RXjLP3TKKu3ddIapQaCpbD4p9ioeGaVIjOHaym7HvCuUm0',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -70,7 +70,7 @@ describe('The standard and extended test suites', () => {
       '$6$rounds=1000$salt',
       'pass',
       '$6$rounds=1000$salt$NqhXojlgP5NLvJojBnjQD87i66jhb8s3bZord3hSZoIgbCJqUfJdp7pclsLBBqgn02fAtd/vn4lieLeX5J.h90',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -147,7 +147,7 @@ describe('sha256 crypt handling', () => {
       '$5$rounds=5000$3a1afb28e54a0391',
       'super password',
       '$5$rounds=5000$3a1afb28e54a0391$0d6RupbpABtxCaH8WWOemYwEcToDVZXX/tHpIy6O1U3',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -158,7 +158,7 @@ describe('sha256 crypt handling', () => {
       '$5$rounds=10000$b2c0a3ef466b2ec7',
       'super password',
       '$5$rounds=10000$b2c0a3ef466b2ec7$2.jZTNfaxIRW5CbTLoXiga/oUEA3bE9E1jgdquXq5R.',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -169,7 +169,7 @@ describe('sha256 crypt handling', () => {
       '$5$salt',
       'super password',
       '$5$salt$hiNtIdUiCzVfs12fahM0sjQcF6XU0yE5G46VOsYmS4D',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -180,7 +180,7 @@ describe('sha256 crypt handling', () => {
       '$5$averylongsaltstring',
       'super password',
       '$5$averylongsaltstr$Tm/C6ErlCKkargHckqaFwBcFTdUdps1p.B3SFRCBue8',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -200,7 +200,7 @@ describe('Miscellaneous', () => {
       '$6$a7a5dc2fa314dda0',
       'asdf£',
       '$6$a7a5dc2fa314dda0$E1GTcgT52oJFvhETaKwBk26Gy0GIzNQu2Mv4.UZwXp00CQi/8vC3IQKcrmpqbUaM2jFMOcDoShcxo1Mrt/Z5k/',
-    ]
+    ] as const
     const compute = encrypt(data[1], data[0])
     assert.equal(compute, data[2])
     assert.equal(verify(data[1], data[2]), true)
@@ -253,7 +253,7 @@ describe('Passwords whose length is a multiple of the digest size', () => {
       'b'.repeat(128),
       '$6$saltstring$Tw3xWHrnyiIt9arzqxpai6SFj9TEKpnyC71SDoJMitzwo3Yjq2ShkuBSBLMe75Wr4/ZtXQLBjpFjE3A9y7L2F.',
     ],
-  ]
+  ] as const
 
   tests.forEach(([salt, plaintext, expected]) => {
     it(`Should match openssl for ${salt} with a ${plaintext.length} byte password`, () => {
@@ -276,7 +276,7 @@ describe('verifyLegacy', () => {
       '$6$saltstring$nRQG2MWG1gXD0tl29EAJs0qZhVgZfeLhyei7IsIqCQOIpYUSXFeZeVNN4JvHeL74gcx6bPrwd1vkroUkbgdM7.',
       '$6$saltstring$UFnGMvEv/ExHbhrh1p8r9tKg7tZbQTFcstyXePZrrnz.6CDlNZtV45fmqPSPR5q82aosPAs.OJmcJn.MVQ4kr0',
     ],
-  ]
+  ] as const
 
   tests.forEach(([plaintext, legacyHash, correctHash]) => {
     it(`Should verify a legacy ${legacyHash.slice(0, 3)} hash only with verifyLegacy`, () => {
@@ -345,7 +345,7 @@ describe('Salt parsing according to the spec', () => {
       'pass',
       '$6$rounds=5000$salt$3aEJgflnzWuw1O3tr0IYSmhUY0cZ7iBQeBP392T7RXjLP3TKKu3ddIapQaCpbD4p9ioeGaVIjOHaym7HvCuUm0',
     ],
-  ]
+  ] as const
 
   tests.forEach(([label, salt, plaintext, expected]) => {
     it(`Should handle ${salt}: ${label}`, () => {
@@ -364,7 +364,9 @@ describe('Salt parsing according to the spec', () => {
   it('Should use all 64 characters when generating a random salt', () => {
     const seen = new Set<string>()
     for (let i = 0; i < 500; i++) {
-      for (const c of encrypt('pass', '$5$rounds=1000').split('$')[3]) {
+      const salt = encrypt('pass', '$5$rounds=1000').split('$')[3]
+      assert.ok(salt)
+      for (const c of salt) {
         seen.add(c)
       }
     }
@@ -382,7 +384,11 @@ describe('verify', () => {
 
 describe('Invalid inputs', () => {
   it('Should throw an exception when used with any other crypto than sha256 or sha512', () => {
-    const data = ['$1$4WZnIm8V', 'pass', '$1$4WZnIm8V$Sg8KVWIq4rKfNz3Z23jZK0']
+    const data = [
+      '$1$4WZnIm8V',
+      'pass',
+      '$1$4WZnIm8V$Sg8KVWIq4rKfNz3Z23jZK0',
+    ] as const
     assert.throws(
       () => encrypt(data[1], data[0]),
       Error,

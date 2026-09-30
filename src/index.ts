@@ -129,7 +129,8 @@ function parseSalt(salt?: string): IConf {
       // convenience of this library
       if (!rounds || rounds[2] === '$') {
         // the salt may contain any character except "$", which terminates it
-        conf.saltString = rest.split('$')[0]
+        const end = rest.indexOf('$')
+        conf.saltString = end === -1 ? rest : rest.slice(0, end)
       }
     }
   }
@@ -250,7 +251,7 @@ function generateHash(plaintext: string, conf: IConf, legacy = false): string {
 
   // step 17-19
   const hashDS = createHash(algorithm)
-  const step18 = 16 + digestA[0]
+  const step18 = 16 + digestA.readUInt8(0)
   for (let i = 0; i < step18; i++) {
     hashDS.update(conf.saltString)
   }
@@ -312,11 +313,12 @@ function generateHash(plaintext: string, conf: IConf, legacy = false): string {
 
 function base64Encode(digest: Buffer, shuffleMap: number[]): string {
   let hash = ''
-  for (let idx = 0; idx < digest.length; idx += 3) {
+  for (let idx = 0; idx < shuffleMap.length; idx += 3) {
+    // the last group may have fewer than three bytes, and is padded with zeroes
     const buf = Buffer.alloc(3)
-    buf[0] = digest[shuffleMap[idx]]
-    buf[1] = digest[shuffleMap[idx + 1]]
-    buf[2] = digest[shuffleMap[idx + 2]]
+    shuffleMap.slice(idx, idx + 3).forEach((pos, i) => {
+      buf.writeUInt8(digest.readUInt8(pos), i)
+    })
 
     hash += bufferToBase64(buf)
   }
@@ -330,14 +332,15 @@ function base64Encode(digest: Buffer, shuffleMap: number[]): string {
  * @param buf Buffer of bytes to be encoded
  */
 function bufferToBase64(buf: Buffer): string {
-  const first = buf[0] & parseInt('00111111', 2)
+  const [b0, b1, b2] = [buf.readUInt8(0), buf.readUInt8(1), buf.readUInt8(2)]
+  const first = b0 & parseInt('00111111', 2)
   const second =
-    ((buf[0] & parseInt('11000000', 2)) >>> 6) |
-    ((buf[1] & parseInt('00001111', 2)) << 2)
+    ((b0 & parseInt('11000000', 2)) >>> 6) |
+    ((b1 & parseInt('00001111', 2)) << 2)
   const third =
-    ((buf[1] & parseInt('11110000', 2)) >>> 4) |
-    ((buf[2] & parseInt('00000011', 2)) << 4)
-  const fourth = (buf[2] & parseInt('11111100', 2)) >>> 2
+    ((b1 & parseInt('11110000', 2)) >>> 4) |
+    ((b2 & parseInt('00000011', 2)) << 4)
+  const fourth = (b2 & parseInt('11111100', 2)) >>> 2
   return (
     dictionary.charAt(first) +
     dictionary.charAt(second) +

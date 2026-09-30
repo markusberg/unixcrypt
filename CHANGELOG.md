@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 - chore: replace Prettier with oxlint and oxfmt
 - chore: remove the unused `baseUrl` from tsconfig.json
+- chore: update to TypeScript 7, and enable stricter compiler options, including `noUncheckedIndexedAccess`
 
 ## [4.0.0] - 2026-09-30
 
