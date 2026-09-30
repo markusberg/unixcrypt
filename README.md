@@ -1,7 +1,7 @@
 # Unixcrypt for Node.js
 
 [![node.js build](https://github.com/markusberg/unixcrypt/actions/workflows/badges.yaml/badge.svg)](https://github.com/markusberg/unixcrypt/actions/workflows/badges.yaml)
-[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage-3.0.4.svg)](https://github.com/markusberg/unixcrypt/actions)
+[![coverage](https://markusberg.github.io/unixcrypt/badges/coverage-4.0.0.svg)](https://github.com/markusberg/unixcrypt/actions)
 [![version](https://img.shields.io/npm/v/unixcrypt.svg)](https://www.npmjs.com/package/unixcrypt)
 [![license](https://img.shields.io/github/license/markusberg/unixcrypt.svg)](./LICENSE)
 [![downloads](https://img.shields.io/npm/dt/unixcrypt.svg)](http://npm-stat.com/charts.html?package=unixcrypt)
@@ -68,6 +68,23 @@ console.log(verify(plaintextPassword, customRoundsAndSalt))
 const sha256 = encrypt(plaintextPassword, "$5")
 console.log(verify(plaintextPassword, sha256))
 // true
+```
+
+### Hashes created by version 3.0.4 or earlier
+
+Versions up to and including 3.0.4 produced incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size: 32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512. Such hashes no longer pass `verify()`. For all other password lengths the hashes are unchanged.
+
+Use `verifyLegacy()` as a fallback, and re-hash the password when it succeeds:
+
+```typescript
+import { encrypt, verify, verifyLegacy } from "unixcrypt"
+
+if (verify(password, storedHash)) {
+  // ok
+} else if (verifyLegacy(password, storedHash)) {
+  // ok, but the stored hash was created by an older version
+  storedHash = encrypt(password)
+}
 ```
 
 ## Test

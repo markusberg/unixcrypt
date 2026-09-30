@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0] - 2026-09-30
+
+- BREAKING fix: incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size (32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512). Hashes of such passwords created by earlier versions no longer pass `verify()`
+- feat: add `verifyLegacy()` for verifying, and migrating, hashes affected by the above
+
 ## [3.0.4] - 2025-12-14
 
 - Update packages
