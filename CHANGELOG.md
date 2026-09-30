@@ -6,6 +6,11 @@ All notable changes to this project will be documented in this file.
 
 - BREAKING fix: incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size (32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512). Hashes of such passwords created by earlier versions no longer pass `verify()`
 - feat: add `verifyLegacy()` for verifying, and migrating, hashes affected by the above
+- BREAKING fix: `verify()` returns `false` instead of throwing a `RangeError` when the hash has the wrong length, for example when it is truncated or empty
+- BREAKING fix: salt parsing now follows the spec. The salt may contain any character except `$`, and is truncated to 16 bytes instead of 16 characters. Salts such as `$6$round=5000$salt` and `$6$rounds=abc$salt`, which used to throw, are now treated as part of the salt. Hash types such as `$05$`, `$6.0$` and `$0x6$`, which used to be accepted, now throw
+- fix: a complete hash including `rounds=`, such as `$6$rounds=5000$salt$hash`, is accepted as salt by `encrypt()`
+- fix: memory use no longer grows with the number of rounds. Large round counts used to run out of memory
+- fix: random salts never contained the character `z`
 
 ## [3.0.4] - 2025-12-14
 

@@ -59,7 +59,7 @@ const shuffleMap: Record<Algorithm, number[]> = {
     41, 20, 62,
     63,
   ]
-};
+}
 const roundsDefault = 5000
 
 /**
@@ -69,7 +69,7 @@ const roundsDefault = 5000
 function getRandomString(length: number): string {
   let result = ""
   for (let i = 0; i < length; i++) {
-    result += dictionary[randomInt(0, dictionary.length - 1)]
+    result += dictionary[randomInt(dictionary.length)]
   }
   return result
 }
@@ -90,11 +90,13 @@ function normalizeSalt(conf: IConf): string {
 /**
  * Parse salt into pieces, performs sanity checks, and returns proper
  * defaults for missing values
- * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234", "$6$"
+ * @param salt Standard salt, "$6$rounds=1234$saltsalt", "$6$saltsalt", "$6", "$6$rounds=1234", "$6$",
+ *   or a complete hash, "$6$rounds=1234$saltsalt$hash"
  */
 function parseSalt(salt?: string): IConf {
   const roundsMin = 1000
   const roundsMax = 999999999
+  const saltMaxBytes = 16
 
   const conf: IConf = {
     id: 6,
@@ -104,31 +106,30 @@ function parseSalt(salt?: string): IConf {
   }
 
   if (salt) {
-    const parts = salt.split("$")
-    conf.id = Number(parts[1]) as HashType
-
-    if (!HashMap[conf.id]) {
+    const prefix = salt.match(/^\$([56])(\$|$)/)
+    if (!prefix) {
       throw new Error("Only sha256 and sha512 is supported by this library")
     }
+    conf.id = Number(prefix[1]) as HashType
 
-    if (parts.length < 2 || parts.length > 4) {
-      throw new Error("Invalid salt string")
-    }
-
-    if (parts.length > 2) {
-      const rounds = parts[2].match(/^rounds=(\d*)$/)
+    // "$6" only specifies the hash type
+    if (prefix[2] === "$") {
+      let rest = salt.slice(prefix[0].length)
+      const rounds = rest.match(/^rounds=(\d*)(\$|$)/)
 
       if (rounds) {
         // number of rounds has been specified
         conf.rounds = Number(rounds[1])
         conf.specifyRounds = true
+        rest = rest.slice(rounds[0].length)
+      }
 
-        if (parts[3] || parts[3] === "") {
-          conf.saltString = parts[3]
-        }
-      } else {
-        // default number of rounds has already been set
-        conf.saltString = parts[2]
+      // "$6$rounds=1234" without a trailing "$" keeps the random salt. The
+      // spec would treat "rounds=1234" as the salt, but this is a deliberate
+      // convenience of this library
+      if (!rounds || rounds[2] === "$") {
+        // the salt may contain any character except "$", which terminates it
+        conf.saltString = rest.split("$")[0]
       }
     }
   }
@@ -140,11 +141,16 @@ function parseSalt(salt?: string): IConf {
     conf.rounds = roundsMax
   }
 
-  // sanity-check saltString
-  conf.saltString = conf.saltString.substring(0, 16)
-
-  if (conf.saltString.match("[^./0-9A-Za-z]")) {
-    throw new Error("Invalid salt string")
+  // sanity-check saltString: the spec limits it to 16 bytes, not characters
+  const saltBytes = Buffer.from(conf.saltString)
+  if (saltBytes.length > saltMaxBytes) {
+    const truncated = saltBytes.subarray(0, saltMaxBytes).toString()
+    if (Buffer.byteLength(truncated) !== saltMaxBytes) {
+      throw new Error(
+        "Invalid salt string: truncating it to 16 bytes would split a multibyte character",
+      )
+    }
+    conf.saltString = truncated
   }
 
   return conf
@@ -251,11 +257,11 @@ function generateHash(plaintext: string, conf: IConf, legacy = false): string {
   const digestDS = hashDS.digest()
 
   // step 20
-  const s = Buffer.alloc(conf.saltString.length)
+  const saltByteLength = Buffer.byteLength(conf.saltString)
+  const s = Buffer.alloc(saltByteLength)
 
   // step 20a
-  // Isn't this step redundant? The salt string doesn't have 32 or 64 bytes. It's truncated to 16 characters
-  const saltByteLength = Buffer.byteLength(conf.saltString)
+  // Isn't this step redundant? The salt string doesn't have 32 or 64 bytes. It's truncated to 16 bytes
   for (
     let offset = 0;
     offset + digestSize <= saltByteLength;
@@ -269,13 +275,13 @@ function generateHash(plaintext: string, conf: IConf, legacy = false): string {
   s.set(digestDS.slice(0, saltRemainder), saltByteLength - saltRemainder)
 
   // step 21
-  const rounds = Array(conf.rounds).fill(0)
-  const digestC: Buffer = rounds.reduce((acc, curr, idx) => {
+  let digestC = digestA
+  for (let idx = 0; idx < conf.rounds; idx++) {
     const hashC = createHash(algorithm)
 
     // steps b-c
     if (idx % 2 === 0) {
-      hashC.update(acc)
+      hashC.update(digestC)
     } else {
       hashC.update(p)
     }
@@ -292,13 +298,13 @@ function generateHash(plaintext: string, conf: IConf, legacy = false): string {
 
     // steps f-g
     if (idx % 2 !== 0) {
-      hashC.update(acc)
+      hashC.update(digestC)
     } else {
       hashC.update(p)
     }
 
-    return hashC.digest()
-  }, digestA)
+    digestC = hashC.digest()
+  }
 
   // step 22
   return base64Encode(digestC, shuffleMap[algorithm])
@@ -348,8 +354,12 @@ function bufferToBase64(buf: Buffer): string {
  *   - "$6$salt" - Use SHA-512 with default rounds
  *   - "$6$rounds=10000$salt" - Use SHA-512 with 10000 rounds
  *   - "$5$salt" - Use SHA-256 with default rounds
+ *   - "$6" or "$6$rounds=10000" - Use a random salt
+ *   - "$6$rounds=10000$salt$hash" - A complete hash, of which only the salt part is used
  *   If omitted, generates SHA-512 hash with random salt
  * @returns The complete hash string in Unix crypt format
+ * @throws If the salt is not for SHA-256 or SHA-512, or if truncating it to 16 bytes
+ *   would split a multibyte character
  * @example
  * // Generate SHA-512 hash with random salt
  * encrypt("mypassword")
@@ -371,6 +381,7 @@ export function encrypt(plaintext: string, salt?: string): string {
  * @param plaintext - The password to verify
  * @param hash - The complete hash string to verify against (including salt and rounds)
  * @returns True if the plaintext matches the hash, false otherwise
+ * @throws If the hash is not a SHA-256 or SHA-512 hash
  * @example
  * // Verify password against hash
  * verify("mypassword", "$6$WHT0QXyF$LQv3c1yqBWVHxkd0LHAkC...")
@@ -392,6 +403,7 @@ export function verify(plaintext: string, hash: string): boolean {
  * @param plaintext - The password to verify
  * @param hash - The complete hash string to verify against (including salt and rounds)
  * @returns True if the plaintext matches the hash using the legacy algorithm, false otherwise
+ * @throws If the hash is not a SHA-256 or SHA-512 hash
  * @example
  * if (verify(password, storedHash)) {
  *   // ok
@@ -409,8 +421,11 @@ function verifyHash(plaintext: string, hash: string, legacy: boolean): boolean {
   const computedHash =
     normalizeSalt(conf) + "$" + generateHash(plaintext, conf, legacy)
 
-  return timingSafeEqual(
-    Buffer.from(computedHash, "utf8"),
-    Buffer.from(hash, "utf8"),
+  const computed = Buffer.from(computedHash, "utf8")
+  const expected = Buffer.from(hash, "utf8")
+
+  // timingSafeEqual throws on buffers of different length, for example a truncated hash
+  return (
+    computed.length === expected.length && timingSafeEqual(computed, expected)
   )
 }

@@ -294,6 +294,92 @@ describe("verifyLegacy", () => {
   })
 })
 
+// Expected values generated with the reference implementation in the spec
+describe("Salt parsing according to the spec", () => {
+  const tests = [
+    [
+      "any character except '$' is allowed",
+      "$6$invalid-salt",
+      "asdf£",
+      "$6$invalid-salt$9hBRjPTWXr9ugdlEbHI/g1W25HTgpoNGjoG2iYJmsKmtZ5ZYU9h3GitcUMHIzXnmCuUKSQLjhPmtrNaqa0.zJ.",
+    ],
+    [
+      "any character except '$' is allowed",
+      "$5$a:b",
+      "pass",
+      "$5$a:b$jm848QFHYm5Y1UJDyiGAVJI.gHjjUB9acincJfi1y3A",
+    ],
+    [
+      "multibyte characters are allowed",
+      "$5$sält",
+      "pass",
+      "$5$sält$fb8sMdKzymXCfTtFJZK/zkHyOmo4Jan5Xawe88mh.P6",
+    ],
+    [
+      "the salt is truncated to 16 bytes, not characters",
+      "$5$ääääääääx",
+      "pass",
+      "$5$ääääääää$sgmKJcJp75ffVNqce.BE4gmT.NC9j71xHiH8qIpKWf6",
+    ],
+    [
+      "a misspelled rounds prefix is part of the salt",
+      "$6$round=5000$salt",
+      "pass",
+      "$6$round=5000$r.6WcwQwdVp8KqQ2hW5kGePLR1.RwfhD9QWPg6ryzzdIibncaQCj.mkhY0A08pr2D1P8rInxTQgG.oL/vsw3u.",
+    ],
+    [
+      "a non-numeric rounds value is part of the salt",
+      "$6$rounds=abc$ab",
+      "pass",
+      "$6$rounds=abc$XWyva6LXKvSIPUhdyadjgXKKcf67JElgNkNVzYqgpltgmUKJZE8njTOlQqp.zWE6PIEPz3QwAKmbcagB/UCd01",
+    ],
+    [
+      "an empty rounds value means the minimum number of rounds",
+      "$6$rounds=$ab",
+      "pass",
+      "$6$rounds=1000$ab$ogitAVNxwr5P8ir8qXXHl/YJ1NmEXGfNP5RYqkcGKFUvOE5juZBskuRBytzvtlUsfdIjWBSSN7eM2Vmm7Bxdn.",
+    ],
+    [
+      "a complete hash may be used as salt",
+      "$6$rounds=5000$salt$hash",
+      "pass",
+      "$6$rounds=5000$salt$3aEJgflnzWuw1O3tr0IYSmhUY0cZ7iBQeBP392T7RXjLP3TKKu3ddIapQaCpbD4p9ioeGaVIjOHaym7HvCuUm0",
+    ],
+  ]
+
+  tests.forEach(([label, salt, plaintext, expected]) => {
+    it(`Should handle ${salt}: ${label}`, () => {
+      assert.equal(encrypt(plaintext, salt), expected)
+      assert.equal(verify(plaintext, expected), true)
+    })
+  })
+
+  it("Should reproduce a complete hash when it is used as salt", () => {
+    for (const salt of ["$6$salt", "$5$rounds=1000$salt"]) {
+      const hash = encrypt("pass", salt)
+      assert.equal(encrypt("pass", hash), hash)
+    }
+  })
+
+  it("Should use all 64 characters when generating a random salt", () => {
+    const seen = new Set<string>()
+    for (let i = 0; i < 500; i++) {
+      for (const c of encrypt("pass", "$5$rounds=1000").split("$")[3]) {
+        seen.add(c)
+      }
+    }
+    assert.equal(seen.size, 64)
+  })
+})
+
+describe("verify", () => {
+  it("Should return false instead of throwing for a hash of the wrong length", () => {
+    assert.equal(verify("pass", ""), false)
+    assert.equal(verify("pass", "$6$saltstring$abc"), false)
+    assert.equal(verifyLegacy("pass", "$6$saltstring$abc"), false)
+  })
+})
+
 describe("Invalid inputs", () => {
   it("Should throw an exception when used with any other crypto than sha256 or sha512", () => {
     const data = ["$1$4WZnIm8V", "pass", "$1$4WZnIm8V$Sg8KVWIq4rKfNz3Z23jZK0"]
@@ -309,39 +395,27 @@ describe("Invalid inputs", () => {
     )
   })
 
-  it("Should throw an exception when salt contains invalid characters", () => {
-    const data = [
-      "$6$invalid-salt",
-      "asdf£",
-      "$6$invalid-salt$this is moot because the salt is invalid",
-    ]
-    assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
-    assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
+  it("Should throw an exception when the hash type is malformed", () => {
+    for (const salt of [
+      "$05$salt",
+      "$6.0$salt",
+      "$0x6$salt",
+      "$6x$salt",
+      "6$salt",
+    ]) {
+      assert.throws(() => encrypt("pass", salt), /Only sha256 and sha512/)
+    }
   })
 
-  it("Should throw an exception when the salt string contains too many '$'-characters", () => {
-    const data = [
-      "$6$invalid$salt$string",
-      "pass",
-      "$6$invalid$salt$string$this is moot because the salt is invalid",
-    ]
-    assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
-    assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
+  it("Should throw an exception when truncating the salt would split a multibyte character", () => {
+    // 15 bytes of "ä" and "x", followed by a 2-byte "ä"
+    assert.throws(
+      () => encrypt("pass", "$5$äääääääxä"),
+      /split a multibyte character/,
+    )
   })
 
-  it("Should throw an exception when the rounds-part of the salt is malformed", () => {
-    const data = [
-      "$6$round=5000$salt",
-      "pass",
-      "$6$round=5000$salt$this is moot because the salt is invalid",
-    ]
-    assert.throws(() => encrypt(data[1], data[0]), Error, "Invalid salt string")
-    assert.throws(() => verify(data[1], data[2]), Error, "Invalid salt string")
-  })
-
-  // LOL. This is not testable.
-  // FATAL ERROR: invalid table size Allocation failed - JavaScript heap out of memory
-
+  // Not testable: 999,999,999 rounds no longer runs out of memory, but still takes close to an hour
   // it("Should be reduce the number of rounds if larger than 999,999,999", () => {
   //   const plaintext = "Plaintext password"
   //   const salt = "$6$rounds=1000000000$salt"
