@@ -70,6 +70,14 @@ console.log(verify(plaintextPassword, sha256))
 // true
 ```
 
+### Salt format
+
+The salt follows the [spec](https://www.akkadia.org/drepper/SHA-crypt.txt): it may contain any character except `$`, and only the first 16 bytes are used. Note that multibyte characters take up more than one byte each, and `encrypt()` throws if truncating the salt would split one. A complete hash may also be passed as salt, in which case only its salt part is used.
+
+As a convenience, `$6$rounds=10000` without a trailing `$` means 10000 rounds with a random salt. The spec would instead treat `rounds=10000` as the salt itself. Use `$6$rounds=10000$` for an empty salt.
+
+`verify()` returns `false` for a hash that doesn't match, including a malformed one, but throws if the hash is not a SHA-256 or SHA-512 hash.
+
 ### Hashes created by version 3.0.4 or earlier
 
 Versions up to and including 3.0.4 produced incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size: 32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512. Such hashes no longer pass `verify()`. For all other password lengths the hashes are unchanged.
