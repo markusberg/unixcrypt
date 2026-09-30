@@ -4,13 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [4.0.0] - 2026-09-30
 
-- BREAKING fix: incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size (32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512). Hashes of such passwords created by earlier versions no longer pass `verify()`
-- feat: add `verifyLegacy()` for verifying, and migrating, hashes affected by the above
-- BREAKING fix: `verify()` returns `false` instead of throwing a `RangeError` when the hash has the wrong length, for example when it is truncated or empty
-- BREAKING fix: salt parsing now follows the spec. The salt may contain any character except `$`, and is truncated to 16 bytes instead of 16 characters. Salts such as `$6$round=5000$salt` and `$6$rounds=abc$salt`, which used to throw, are now treated as part of the salt. Hash types such as `$05$`, `$6.0$` and `$0x6$`, which used to be accepted, now throw
-- fix: a complete hash including `rounds=`, such as `$6$rounds=5000$salt$hash`, is accepted as salt by `encrypt()`
-- fix: memory use no longer grows with the number of rounds. Large round counts used to run out of memory
-- fix: random salts never contained the character `z`
+- BREAKING fix: incorrect hashes for passwords whose length in bytes is an exact multiple of the digest size (32, 64, 96... bytes for SHA-256, and 64, 128... bytes for SHA-512). Hashes of such passwords created by earlier versions no longer pass `verify()`. See "Hashes created by version 3.0.4 or earlier" in README.md for how to migrate them
+- BREAKING fix: the hash type must be exactly `$5` or `$6`. Variants such as `$05$`, `$6.0$` and `$0x6$` used to be accepted, and now throw
+- feat: add `verifyLegacy()` for verifying, and migrating, hashes affected by the password length fix above
+- feat: salt parsing now follows the spec, and accepts salts that used to throw. The salt may contain any character except `$`, including multibyte characters, and is truncated to 16 bytes. A misspelled or non-numeric rounds prefix is part of the salt, so `$6$round=5000$salt` uses the salt `round=5000`. Hashes of salts that were accepted before are unchanged
+- fix: `encrypt()` accepts a complete hash including `rounds=` as salt, such as `$6$rounds=5000$salt$hash`. It used to throw
+- fix: `verify()` returns `false` instead of throwing a `RangeError` when the hash has the wrong length, for example when it is truncated or empty
+- fix: memory use no longer grows with the number of rounds. Large round counts, up to the spec maximum of 999,999,999, used to run out of memory
+- fix: random salts never contained the character `z`, which slightly reduced their entropy
+- docs: document the salt format and migration from 3.x in README.md, and make the TypeScript examples compile
+- chore: update packages
 
 ## [3.0.4] - 2025-12-14
 

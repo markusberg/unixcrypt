@@ -13,7 +13,7 @@ https://www.akkadia.org/drepper/SHA-crypt.txt
 
 This package has no external dependencies. It uses the cryptographic facilities built into Node.js. Since version 2.0 this package is ESModule only. If you require CommonJS functionality, you can still use the 1.x version.
 
-For development, there are dependencies on TypeScript, and Node.Js v24.
+For development, there are dependencies on TypeScript, and Node.js v24.
 
 ## Goals and motivation
 
@@ -33,7 +33,7 @@ $ npm install unixcrypt
 
 ### JavaScript
 
-The JavaScript usage should be identical to the TypeScript below.
+The JavaScript usage is identical to the TypeScript below. The package is ESM only, so use `import` rather than `require()`.
 
 ### TypeScript
 
@@ -42,8 +42,9 @@ import { encrypt, verify } from "unixcrypt"
 
 const plaintextPassword = "password"
 
-// without providing salt, random salt is used, and default number of rounds
+// without providing salt, SHA-512 is used with a random salt and the default number of rounds
 const pwHash = encrypt(plaintextPassword)
+// $6$nixlMJ5Ot/aqjEIE$uPwK/os2MbhxkPXlsEV8J7NXTtFDD/wpWavpYG7zPsPF888lxOkgez7Kw7Z4NEMm1d/mizjkcwhclbAQSW6hi.
 
 // verify password with generated hash
 console.log(verify(plaintextPassword, pwHash))
@@ -51,23 +52,31 @@ console.log(verify(plaintextPassword, pwHash))
 
 // specify number of rounds
 const moreRounds = encrypt(plaintextPassword, "$6$rounds=10000")
+// $6$rounds=10000$iqCiJgtSFGKr/TKQ$WPgUmrD08llHSbrBbnIQYPuXBcVymch9HmDySDTMdDm9AAfGwQSs14RXKqy/sYBhwuBtLdmIFza1q6j9fGEMM/
 console.log(verify(plaintextPassword, moreRounds))
 // true
 
 // provide custom salt
 const customSalt = encrypt(plaintextPassword, "$6$salt")
+// $6$salt$IxDD3jeSOb5eB1CX5LBsqZFVkJdido3OUILO5Ifz5iwMuTS4XMS130MTSuDDl3aCI6WouIL9AjRbLCelDCy.g.
 console.log(verify(plaintextPassword, customSalt))
 // true
 
 // or provide both rounds and salt
 const customRoundsAndSalt = encrypt(plaintextPassword, "$6$rounds=10000$salt")
+// $6$rounds=10000$salt$dE5fLfpn2uXfkz.eouwYK/BjrHRu.piovQPjwlE06fDJHwMlg2l.IqEBUIfWBzf7YPXOAddB3FM7rnXHHKVNt.
 console.log(verify(plaintextPassword, customRoundsAndSalt))
 // true
 
 // you can also use SHA-256
 const sha256 = encrypt(plaintextPassword, "$5")
+// $5$Joama98FiN5zL7zN$bQvLuqChyXvRCU2X1VXbAECsxfqAskaoypzmZEvQuA2
 console.log(verify(plaintextPassword, sha256))
 // true
+
+// a wrong password doesn't verify
+console.log(verify("wrong password", pwHash))
+// false
 ```
 
 ### Salt format
@@ -87,17 +96,27 @@ Use `verifyLegacy()` as a fallback, and re-hash the password when it succeeds:
 ```typescript
 import { encrypt, verify, verifyLegacy } from "unixcrypt"
 
-if (verify(password, storedHash)) {
-  // ok
-} else if (verifyLegacy(password, storedHash)) {
-  // ok, but the stored hash was created by an older version
-  storedHash = encrypt(password)
+/**
+ * Check a password against its stored hash. Returns false if the password is
+ * wrong, and otherwise the hash to store, which is a new one if the stored
+ * hash was created by an older version
+ */
+function checkPassword(password: string, storedHash: string): string | false {
+  if (verify(password, storedHash)) {
+    return storedHash
+  }
+  if (verifyLegacy(password, storedHash)) {
+    return encrypt(password)
+  }
+  return false
 }
 ```
 
+Note that `encrypt(password)` creates a SHA-512 hash with the default number of rounds. Pass a salt such as `"$5"` or `"$6$rounds=10000"` to keep the type or rounds of the stored hash.
+
 ## Test
 
-The tests are written with the built-in [node:assert](https://nodejs.org/api/assert.html) module, and are run in the Node.Js test runner. The test runner didn't get good enough coverage reporting until v24, so that's the reason for the minimum required version of v24 for building and testing.
+The tests are written with the built-in [node:assert](https://nodejs.org/api/assert.html) module, and are run in the Node.js test runner. The test runner didn't get good enough coverage reporting until v24, so that's the reason for the minimum required version of v24 for building and testing.
 
 ```sh
 $ npm test
