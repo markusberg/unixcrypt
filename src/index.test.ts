@@ -1,7 +1,7 @@
 import { strict as assert } from "node:assert"
 import { describe, it } from "node:test"
 
-import { encrypt, verify } from "./index.js"
+import { encrypt, verify, verifyLegacy } from "./index.js"
 
 /**
  * These tests are copied from the Public Domain reference implementation by Ulrich Drepper
@@ -227,6 +227,70 @@ describe("Miscellaneous", () => {
     // this should not throw an exception
     const compute = encrypt(plaintext)
     assert.equal(verify(plaintext, compute), true)
+  })
+})
+
+// Expected values generated with `openssl passwd -5/-6 -salt saltstring`
+describe("Passwords whose length is a multiple of the digest size", () => {
+  const tests = [
+    [
+      "$5$saltstring",
+      "a".repeat(32),
+      "$5$saltstring$rjMPH2qyAsLvASQeJUKQQdHLfa3DC3Q9NLllO3sQ6m2",
+    ],
+    [
+      "$5$saltstring",
+      "This password is exactly sixty-four bytes long, a SHA-256 block!",
+      "$5$saltstring$fnBIGxWGUNweicujOKoRLCffZNmNL0Sr9bmWxoo3R//",
+    ],
+    [
+      "$6$saltstring",
+      "This password is exactly sixty-four bytes long, a SHA-512 block!",
+      "$6$saltstring$UFnGMvEv/ExHbhrh1p8r9tKg7tZbQTFcstyXePZrrnz.6CDlNZtV45fmqPSPR5q82aosPAs.OJmcJn.MVQ4kr0",
+    ],
+    [
+      "$6$saltstring",
+      "b".repeat(128),
+      "$6$saltstring$Tw3xWHrnyiIt9arzqxpai6SFj9TEKpnyC71SDoJMitzwo3Yjq2ShkuBSBLMe75Wr4/ZtXQLBjpFjE3A9y7L2F.",
+    ],
+  ]
+
+  tests.forEach(([salt, plaintext, expected]) => {
+    it(`Should match openssl for ${salt} with a ${plaintext.length} byte password`, () => {
+      assert.equal(encrypt(plaintext, salt), expected)
+      assert.equal(verify(plaintext, expected), true)
+    })
+  })
+})
+
+// Hashes produced by unixcrypt 3.0.4 and earlier for the passwords above
+describe("verifyLegacy", () => {
+  const tests = [
+    [
+      "This password is exactly sixty-four bytes long, a SHA-256 block!",
+      "$5$saltstring$AfAzTEis76QhBQHnyrsL.oxSUbg31IQ5MOsPbNlCUa7",
+      "$5$saltstring$fnBIGxWGUNweicujOKoRLCffZNmNL0Sr9bmWxoo3R//",
+    ],
+    [
+      "This password is exactly sixty-four bytes long, a SHA-512 block!",
+      "$6$saltstring$nRQG2MWG1gXD0tl29EAJs0qZhVgZfeLhyei7IsIqCQOIpYUSXFeZeVNN4JvHeL74gcx6bPrwd1vkroUkbgdM7.",
+      "$6$saltstring$UFnGMvEv/ExHbhrh1p8r9tKg7tZbQTFcstyXePZrrnz.6CDlNZtV45fmqPSPR5q82aosPAs.OJmcJn.MVQ4kr0",
+    ],
+  ]
+
+  tests.forEach(([plaintext, legacyHash, correctHash]) => {
+    it(`Should verify a legacy ${legacyHash.slice(0, 3)} hash only with verifyLegacy`, () => {
+      assert.equal(verify(plaintext, legacyHash), false)
+      assert.equal(verifyLegacy(plaintext, legacyHash), true)
+      assert.equal(verifyLegacy(plaintext, correctHash), false)
+      assert.equal(verifyLegacy("wrong password", legacyHash), false)
+    })
+  })
+
+  it("Should behave like verify for unaffected password lengths", () => {
+    const data = tests2[0]
+    assert.equal(verifyLegacy(data[1], data[2]), true)
+    assert.equal(verifyLegacy("wrong password", data[2]), false)
   })
 })
 

@@ -1,6 +1,6 @@
 {
   "name": "unixcrypt",
-  "version": "3.0.4",
+  "version": "4.0.0",
   "description": "Node.js implementation of Unixcrypt, specifically SHA-256 and SHA-512",
   "type": "module",
   "exports": {

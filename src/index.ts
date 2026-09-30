@@ -151,11 +151,27 @@ function parseSalt(salt?: string): IConf {
 }
 
 /**
+ * Upper bound for the "for each block of 32 or 64 bytes" loops in steps 9 and 16a.
+ * Versions up to and including 3.0.4 stopped one block short when the password
+ * length was an exact multiple of the digest size, which `legacy` reproduces
+ * @param plaintextByteLength
+ * @param legacy
+ */
+function blockLimit(plaintextByteLength: number, legacy: boolean): number {
+  return legacy ? plaintextByteLength - 1 : plaintextByteLength
+}
+
+/**
  * Steps 1-12 in the spec
  * @param plaintext
  * @param conf
+ * @param legacy Reproduce the behaviour of 3.0.4 and earlier, see blockLimit()
  */
-function generateDigestA(plaintext: string, conf: IConf): Buffer {
+function generateDigestA(
+  plaintext: string,
+  conf: IConf,
+  legacy: boolean,
+): Buffer {
   const algorithm: Algorithm = HashMap[conf.id].algorithm
   const digestSize: number = HashMap[conf.id].digestSize
 
@@ -174,7 +190,7 @@ function generateDigestA(plaintext: string, conf: IConf): Buffer {
   const plaintextByteLength = Buffer.byteLength(plaintext)
   for (
     let offset = 0;
-    offset + digestSize < plaintextByteLength;
+    offset + digestSize <= blockLimit(plaintextByteLength, legacy);
     offset += digestSize
   ) {
     hashA.update(digestB)
@@ -197,12 +213,12 @@ function generateDigestA(plaintext: string, conf: IConf): Buffer {
   return hashA.digest()
 }
 
-function generateHash(plaintext: string, conf: IConf): string {
+function generateHash(plaintext: string, conf: IConf, legacy = false): string {
   const algorithm: Algorithm = HashMap[conf.id].algorithm
   const digestSize: number = HashMap[conf.id].digestSize
 
   // steps 1-12
-  const digestA = generateDigestA(plaintext, conf)
+  const digestA = generateDigestA(plaintext, conf, legacy)
 
   // steps 13-15
   const plaintextByteLength = Buffer.byteLength(plaintext)
@@ -216,7 +232,7 @@ function generateHash(plaintext: string, conf: IConf): string {
   const p = Buffer.alloc(plaintextByteLength)
   for (
     let offset = 0;
-    offset + digestSize < plaintextByteLength;
+    offset + digestSize <= blockLimit(plaintextByteLength, legacy);
     offset += digestSize
   ) {
     p.set(digestDP, offset)
@@ -242,7 +258,7 @@ function generateHash(plaintext: string, conf: IConf): string {
   const saltByteLength = Buffer.byteLength(conf.saltString)
   for (
     let offset = 0;
-    offset + digestSize < saltByteLength;
+    offset + digestSize <= saltByteLength;
     offset += digestSize
   ) {
     s.set(digestDS, offset)
@@ -361,8 +377,37 @@ export function encrypt(plaintext: string, salt?: string): string {
  * // -> true or false
  */
 export function verify(plaintext: string, hash: string): boolean {
-  const salt = hash.slice(0, hash.lastIndexOf("$"))
-  const computedHash = encrypt(plaintext, salt)
+  return verifyHash(plaintext, hash, false)
+}
+
+/**
+ * Verify a plaintext password against a hash created by unixcrypt 3.0.4 or earlier.
+ *
+ * Those versions produced incorrect hashes for passwords whose length in bytes is
+ * an exact multiple of the digest size (32, 64, 96... bytes for SHA-256, and
+ * 64, 128... bytes for SHA-512). For all other lengths the result is identical
+ * to {@link verify}. Use it as a fallback when {@link verify} fails, and re-hash
+ * the password with {@link encrypt} when it succeeds.
+ *
+ * @param plaintext - The password to verify
+ * @param hash - The complete hash string to verify against (including salt and rounds)
+ * @returns True if the plaintext matches the hash using the legacy algorithm, false otherwise
+ * @example
+ * if (verify(password, storedHash)) {
+ *   // ok
+ * } else if (verifyLegacy(password, storedHash)) {
+ *   // ok, but the stored hash was created by an older version
+ *   storedHash = encrypt(password)
+ * }
+ */
+export function verifyLegacy(plaintext: string, hash: string): boolean {
+  return verifyHash(plaintext, hash, true)
+}
+
+function verifyHash(plaintext: string, hash: string, legacy: boolean): boolean {
+  const conf = parseSalt(hash.slice(0, hash.lastIndexOf("$")))
+  const computedHash =
+    normalizeSalt(conf) + "$" + generateHash(plaintext, conf, legacy)
 
   return timingSafeEqual(
     Buffer.from(computedHash, "utf8"),
