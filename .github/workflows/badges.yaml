@@ -8,20 +8,20 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    # required for pushing the coverage badge to gh-pages
+    permissions:
+      contents: write
+
     concurrency:
       group: testbuilds
       cancel-in-progress: false
 
-    strategy:
-      matrix:
-        node-version: [24.x]
-
     steps:
-      - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v7
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 24.x
       - run: npm ci
       - run: npm run build --if-present
       - run: npm test
@@ -30,8 +30,8 @@ jobs:
         id: get-npm-version
         shell: bash
         run: |
-          VERSION=$(node -p 't=require(`./package.json`).version')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          VERSION=$(node -p "require('./package.json').version")
+          echo "VERSION=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Verify Coverage Badge Version in README.md
         shell: bash
@@ -43,6 +43,6 @@ jobs:
           fi
 
       - name: Update Coverage Badge
-        uses: markusberg/coverage-badge-action@main
+        uses: markusberg/coverage-badge-action@v2.0.0
         with:
           version: ${{ steps.get-npm-version.outputs.VERSION }}
